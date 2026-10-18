@@ -1,6 +1,6 @@
 /* Offline-Speicher der Lernapp.
    Bei jeder neuen Version die Nummer in CACHE erhöhen und neue Dateien in FILES eintragen. */
-const CACHE = "lernapp-v1";
+const CACHE = "lernapp-v2";
 const FILES = [
   "./",
   "./index.html",
@@ -8,9 +8,9 @@ const FILES = [
   "./icon-180.png",
   "./icon-192.png",
   "./icon-512.png",
-  "./inhalte/latein.js",
-  "./inhalte/geschichte.js",
-  "./inhalte/informatik.js"
+  "./latein.js",
+  "./geschichte.js",
+  "./informatik.js"
 ];
 
 self.addEventListener("install", e => {
