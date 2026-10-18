@@ -1,6 +1,6 @@
 /* Offline-Speicher der Lernapp.
    Bei jeder neuen Version die Nummer in CACHE erhöhen und neue Dateien in FILES eintragen. */
-const CACHE = "lernapp-v2";
+const CACHE = "lernapp-v4";
 const FILES = [
   "./",
   "./index.html",

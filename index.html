@@ -134,6 +134,8 @@ details.aufg summary::-webkit-details-marker{display:none}
 .mist{padding:12px 16px;border-bottom:1px solid var(--line);font-size:15px}
 .mist:last-child{border-bottom:0}
 .mist b{display:block}
+.hero{border-radius:var(--radius);overflow:hidden;line-height:0;box-shadow:var(--shadow)}
+.hero svg{width:100%;height:auto;display:block}
 .empty{padding:30px 10px;text-align:center;color:var(--muted)}
 .foot{color:var(--muted);font-size:13px;text-align:center;margin-top:26px}
 .bits{display:flex;gap:10px;justify-content:center;margin-top:16px}
@@ -198,8 +200,29 @@ const box = k => (DB.items[k] ? DB.items[k].b : 0);
 const seen = k => !!DB.items[k];
 function mark(k, ok) {
   const it = DB.items[k] || { b: 0, n: 0, f: 0 };
-  it.n++; if (ok) it.b = Math.min(5, it.b + 1); else { it.b = 0; it.f++; }
+  it.n++; if (ok) { it.b = Math.min(5, it.b + 1); jingle(); } else { it.b = 0; it.f++; }
   it.t = Date.now(); DB.items[k] = it; save();
+}
+/* Erfolgston (wird im Browser erzeugt, keine Audiodatei nötig) */
+let AC = null;
+function jingle() {
+  if (!opt("sound", true)) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+    const t = AC.currentTime + 0.01;
+    [[784, 0, 0.16], [988, 0.08, 0.16], [1319, 0.16, 0.5]].forEach(([f, d, len], i) => {
+      [["triangle", 1, 0.16], ["sine", 2, 0.04]].forEach(([type, mul, vol]) => {
+        const o = AC.createOscillator(), g = AC.createGain();
+        o.type = type; o.frequency.value = f * mul;
+        g.gain.setValueAtTime(0.0001, t + d);
+        g.gain.exponentialRampToValueAtTime(vol, t + d + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + d + len);
+        o.connect(g); g.connect(AC.destination);
+        o.start(t + d); o.stop(t + d + len + 0.05);
+      });
+    });
+  } catch (e) {}
 }
 const SICHER = 3;
 const known = k => box(k) >= SICHER;
@@ -617,7 +640,7 @@ VIEWS.trainer = ({ id }) => {
       ${done ? `<div class="feedback ${ok ? "ok" : "bad"}"><b>${ok ? "Richtig!" : "Leider falsch. Richtig ist: " + esc(t.answer)}</b><span class="sol">${esc(t.e)}</span></div>
         <button class="btn primary full" id="b-next">${i + 1 < tasks.length ? "Weiter" : "Auswertung"}</button>`
         : (t.type === "bit" ? "" : `<button class="btn primary full" id="b-check">Prüfen</button>`)}`);
-    const submit = val => { if (checkTrainer(t, val)) score++; draw(val); };
+    const submit = val => { if (checkTrainer(t, val)) { score++; jingle(); } draw(val); };
     if (!done) {
       if (t.type === "bit") document.querySelectorAll("[data-b]").forEach(b => b.onclick = () => submit(b.dataset.b));
       else { const inp = $("#inp"); setTimeout(() => inp.focus(), 50); $("#b-check").onclick = () => submit(inp.value); inp.addEventListener("keydown", e => { if (e.key === "Enter") submit(inp.value); }); }
@@ -628,11 +651,14 @@ VIEWS.trainer = ({ id }) => {
 
 /* --- Einstellungen --- */
 VIEWS.settings = () => {
-  shell("Einstellungen", `<h2 class="sec">Lernstand zurücksetzen</h2><div class="card">
+  shell("Einstellungen", `<h2 class="sec">Ton</h2><div class="card toggle"><span>Ton bei richtiger Antwort<br><small style="color:var(--muted)">Beim iPhone muss der Lautlos-Schalter aus sein.</small></span>
+    <button class="switch ${opt("sound", true) ? "on" : ""}" id="b-sound" aria-label="Ton bei richtiger Antwort"></button></div>
+    <h2 class="sec">Lernstand zurücksetzen</h2><div class="card">
     ${FAECHER.map(f => `<button class="topic" data-r="${f.id}"><span class="tt"><b>${esc(f.name)}</b><small>${pct(fachKeys(f))} % sicher</small></span><span style="color:var(--bad);font-size:15px">Zurücksetzen</span></button>`).join("")}</div>
     <p class="hint">Der Lernstand ist nur auf diesem Gerät gespeichert. Auf iPhone und iPad wird getrennt gezählt.</p>
     <p class="hint">Ein Eintrag gilt als «sicher», wenn er dreimal hintereinander richtig war. Bei einem Fehler beginnt er wieder von vorn.</p>
     <p class="foot">Lernapp · Version ${VERSION}</p>`);
+  $("#b-sound").onclick = () => { setOpt("sound", !opt("sound", true)); if (opt("sound", true)) jingle(); render(); };
   document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => {
     const f = fachById(b.dataset.r);
     if (!confirm(`Lernstand für ${f.name} wirklich löschen?`)) return;
@@ -643,7 +669,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.1 (18.10.2026)";
+const VERSION = "1.3 (18.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
