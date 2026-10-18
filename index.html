@@ -135,7 +135,7 @@ details.aufg summary::-webkit-details-marker{display:none}
 .mist:last-child{border-bottom:0}
 .mist b{display:block}
 .hero{border-radius:var(--radius);overflow:hidden;line-height:0;box-shadow:var(--shadow)}
-.hero svg{width:100%;height:auto;display:block}
+.hero img{width:100%;height:auto;display:block}
 .empty{padding:30px 10px;text-align:center;color:var(--muted)}
 .foot{color:var(--muted);font-size:13px;text-align:center;margin-top:26px}
 .bits{display:flex;gap:10px;justify-content:center;margin-top:16px}
@@ -200,7 +200,7 @@ const box = k => (DB.items[k] ? DB.items[k].b : 0);
 const seen = k => !!DB.items[k];
 function mark(k, ok) {
   const it = DB.items[k] || { b: 0, n: 0, f: 0 };
-  it.n++; if (ok) { it.b = Math.min(5, it.b + 1); jingle(); } else { it.b = 0; it.f++; }
+  it.n++; if (ok) { it.b = Math.min(5, it.b + 1); jingle(); } else { it.b = 0; it.f++; sadTone(); }
   it.t = Date.now(); DB.items[k] = it; save();
 }
 /* Erfolgston (wird im Browser erzeugt, keine Audiodatei nötig) */
@@ -221,6 +221,26 @@ function jingle() {
         o.connect(g); g.connect(AC.destination);
         o.start(t + d); o.stop(t + d + len + 0.05);
       });
+    });
+  } catch (e) {}
+}
+/* Ton bei falscher Antwort: zwei sanfte, absteigende Töne */
+function sadTone() {
+  if (!opt("sound", true)) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+    const t = AC.currentTime + 0.01;
+    [[392, 0, 0.22], [330, 0.2, 0.45]].forEach(([f, d, len]) => {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(f, t + d);
+      o.frequency.exponentialRampToValueAtTime(f * 0.94, t + d + len);
+      g.gain.setValueAtTime(0.0001, t + d);
+      g.gain.exponentialRampToValueAtTime(0.2, t + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d + len);
+      o.connect(g); g.connect(AC.destination);
+      o.start(t + d); o.stop(t + d + len + 0.05);
     });
   } catch (e) {}
 }
@@ -314,7 +334,7 @@ VIEWS.home = () => {
       <span style="flex:1;min-width:0"><span class="t">${esc(f.name)}</span><br><span class="s">${n} · ${p} % sicher</span>
       <span class="meter"><i style="width:${p}%"></i></span></span><span class="chev">${ICON.chev}</span></button>`;
   }).join("");
-  shell("Lernapp", `<h2 class="sec">Fächer</h2>${rows}<p class="foot">Der Lernstand wird nur auf diesem Gerät gespeichert.</p>`,
+  shell("Lernapp", `<div class="hero"><img src="startbild.jpg" alt="" width="1200" height="675"></div><h2 class="sec">Fächer</h2>${rows}<p class="foot">Der Lernstand wird nur auf diesem Gerät gespeichert.</p>`,
     { right: `<button class="iconbtn" id="b-set" aria-label="Einstellungen">${ICON.gear}</button>` });
   document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => go("fach", { id: b.dataset.f }));
   $("#b-set").onclick = () => go("settings");
@@ -408,30 +428,33 @@ VIEWS.karten = ({ id }) => {
   runCards(f, deck);
 };
 function runCards(f, deck) {
-  let i = 0, flipped = false; const wrong = [];
+  /* «Nochmal»-Karten kommen in derselben Runde wieder, bis sie gewusst sind. */
+  const queue = deck.slice(), total = deck.length, missed = new Set();
+  let flipped = false, done = 0;
   const dirSeg = f.art === "vokabeln" ? `<div class="seg" style="margin-bottom:12px">${[["la", "La → De"], ["de", "De → La"], ["mix", "Gemischt"]].map(([v, l]) => `<button data-d="${v}" class="${opt("dir", "la") === v ? "on" : ""}">${l}</button>`).join("")}</div>` : "";
   function draw() {
-    if (!deck.length) return shell("Karteikarten", dirSeg + emptyMsg());
-    if (i >= deck.length) return finish();
-    const c = deck[i];
-    shell("Karteikarten", `${dirSeg}<div class="progress"><span>${i + 1} / ${deck.length}</span><span class="meter"><i style="width:${100 * i / deck.length}%"></i></span></div>
-      <button class="card flash" id="fc">${c.front}${flipped ? `<hr>${c.back}` : `<div class="tap">Tippen zum Umdrehen</div>`}</button>
+    if (!total) return shell("Karteikarten", dirSeg + emptyMsg());
+    if (!queue.length) return finish();
+    const c = queue[0], again = missed.has(c.key);
+    shell("Karteikarten", `${dirSeg}<div class="progress"><span>${done} / ${total} gewusst</span><span class="meter"><i style="width:${100 * done / total}%"></i></span></div>
+      <button class="card flash" id="fc">${again ? `<div class="info">Nochmal</div>` : ""}${c.front}${flipped ? `<hr>${c.back}` : `<div class="tap">Tippen zum Umdrehen</div>`}</button>
       ${flipped ? `<div class="actions"><button class="btn bad" id="b-no">Nochmal</button><button class="btn ok" id="b-yes">Gewusst</button></div>` : ""}`);
     $("#fc").onclick = () => { if (!flipped) { flipped = true; draw(); } };
     if (flipped) {
-      $("#b-no").onclick = () => { mark(c.key, false); wrong.push(c); next(); };
-      $("#b-yes").onclick = () => { mark(c.key, true); next(); };
+      $("#b-no").onclick = () => {
+        mark(c.key, false); missed.add(c.key);
+        queue.shift(); queue.splice(Math.min(3, queue.length), 0, c);
+        flipped = false; draw();
+      };
+      $("#b-yes").onclick = () => { mark(c.key, true); queue.shift(); done++; flipped = false; draw(); };
     }
     bindDir();
   }
   function bindDir() { document.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { setOpt("dir", b.dataset.d); render(); }); }
-  function next() { i++; flipped = false; draw(); }
   function finish() {
-    const ok = deck.length - wrong.length;
-    shell("Karteikarten", `<div class="card result"><div class="big">${ok} / ${deck.length}</div><div class="sub">gewusst</div></div>
-      ${wrong.length ? `<button class="btn primary full" id="b-again">Die ${wrong.length} falschen nochmal</button>` : ""}
-      <button class="btn ghost full" id="b-new">Neue Runde</button>`);
-    if (wrong.length) $("#b-again").onclick = () => runCards(f, shuffle(wrong));
+    const first = total - missed.size;
+    shell("Karteikarten", `<div class="card result"><div class="big">${first} / ${total}</div><div class="sub">beim ersten Mal gewusst${missed.size ? ` · ${missed.size} nach Wiederholung` : ""}</div></div>
+      <button class="btn primary full" id="b-new">Neue Runde</button>`);
     $("#b-new").onclick = () => render();
   }
   draw();
@@ -640,7 +663,7 @@ VIEWS.trainer = ({ id }) => {
       ${done ? `<div class="feedback ${ok ? "ok" : "bad"}"><b>${ok ? "Richtig!" : "Leider falsch. Richtig ist: " + esc(t.answer)}</b><span class="sol">${esc(t.e)}</span></div>
         <button class="btn primary full" id="b-next">${i + 1 < tasks.length ? "Weiter" : "Auswertung"}</button>`
         : (t.type === "bit" ? "" : `<button class="btn primary full" id="b-check">Prüfen</button>`)}`);
-    const submit = val => { if (checkTrainer(t, val)) { score++; jingle(); } draw(val); };
+    const submit = val => { if (checkTrainer(t, val)) { score++; jingle(); } else sadTone(); draw(val); };
     if (!done) {
       if (t.type === "bit") document.querySelectorAll("[data-b]").forEach(b => b.onclick = () => submit(b.dataset.b));
       else { const inp = $("#inp"); setTimeout(() => inp.focus(), 50); $("#b-check").onclick = () => submit(inp.value); inp.addEventListener("keydown", e => { if (e.key === "Enter") submit(inp.value); }); }
@@ -651,8 +674,8 @@ VIEWS.trainer = ({ id }) => {
 
 /* --- Einstellungen --- */
 VIEWS.settings = () => {
-  shell("Einstellungen", `<h2 class="sec">Ton</h2><div class="card toggle"><span>Ton bei richtiger Antwort<br><small style="color:var(--muted)">Beim iPhone muss der Lautlos-Schalter aus sein.</small></span>
-    <button class="switch ${opt("sound", true) ? "on" : ""}" id="b-sound" aria-label="Ton bei richtiger Antwort"></button></div>
+  shell("Einstellungen", `<h2 class="sec">Ton</h2><div class="card toggle"><span>Töne bei richtiger und falscher Antwort<br><small style="color:var(--muted)">Beim iPhone muss der Lautlos-Schalter aus sein.</small></span>
+    <button class="switch ${opt("sound", true) ? "on" : ""}" id="b-sound" aria-label="Töne"></button></div>
     <h2 class="sec">Lernstand zurücksetzen</h2><div class="card">
     ${FAECHER.map(f => `<button class="topic" data-r="${f.id}"><span class="tt"><b>${esc(f.name)}</b><small>${pct(fachKeys(f))} % sicher</small></span><span style="color:var(--bad);font-size:15px">Zurücksetzen</span></button>`).join("")}</div>
     <p class="hint">Der Lernstand ist nur auf diesem Gerät gespeichert. Auf iPhone und iPad wird getrennt gezählt.</p>
@@ -669,7 +692,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.3 (18.10.2026)";
+const VERSION = "1.5 (18.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
