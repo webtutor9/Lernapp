@@ -215,12 +215,29 @@ function mark(k, ok) {
 }
 /* Erfolgston (wird im Browser erzeugt, keine Audiodatei nötig) */
 let AC = null;
-function jingle() {
+/* Gemeinsamer Tonstart. iOS hält den Audio-Kontext nach Hintergrund oder Sperre oft an
+   («suspended» oder «interrupted»). Darum: Kontext bei Bedarf neu erzeugen, aufwecken
+   und die Töne erst spielen, wenn er wirklich läuft. */
+function withAudio(play) {
   if (!opt("sound", true)) return;
   try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    if (AC.state === "suspended") AC.resume();
-    const t = AC.currentTime + 0.01;
+    if (!AC || AC.state === "closed") AC = new (window.AudioContext || window.webkitAudioContext)();
+    const go = () => { try { play(AC, AC.currentTime + 0.03); } catch (e) {} };
+    if (AC.state === "running") return go();
+    const p = AC.resume();
+    if (p && p.then) p.then(go, go); else go();
+  } catch (e) {}
+}
+/* Nach Hintergrund/Sperre den alten Kontext verwerfen; der nächste Tipp erzeugt einen frischen. */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && AC) { try { AC.close(); } catch (e) {} AC = null; }
+});
+/* Jede Berührung weckt einen angehaltenen Kontext auf. */
+["pointerdown", "touchend", "keydown"].forEach(ev => document.addEventListener(ev, () => {
+  if (AC && AC.state !== "running") { try { AC.resume(); } catch (e) {} }
+}, { capture: true, passive: true }));
+function jingle() {
+  withAudio((AC, t) => {
     [[784, 0, 0.16], [988, 0.08, 0.16], [1319, 0.16, 0.5]].forEach(([f, d, len], i) => {
       [["triangle", 1, 0.16], ["sine", 2, 0.04]].forEach(([type, mul, vol]) => {
         const o = AC.createOscillator(), g = AC.createGain();
@@ -232,15 +249,11 @@ function jingle() {
         o.start(t + d); o.stop(t + d + len + 0.05);
       });
     });
-  } catch (e) {}
+  });
 }
 /* Ton bei falscher Antwort: zwei sanfte, absteigende Töne */
 function sadTone() {
-  if (!opt("sound", true)) return;
-  try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    if (AC.state === "suspended") AC.resume();
-    const t = AC.currentTime + 0.01;
+  withAudio((AC, t) => {
     [[392, 0, 0.22], [330, 0.2, 0.45]].forEach(([f, d, len]) => {
       const o = AC.createOscillator(), g = AC.createGain();
       o.type = "sine";
@@ -252,7 +265,7 @@ function sadTone() {
       o.connect(g); g.connect(AC.destination);
       o.start(t + d); o.stop(t + d + len + 0.05);
     });
-  } catch (e) {}
+  });
 }
 /* Epische Start-Fanfare: kurzer Auftakt, dann grosser Dur-Akkord mit Pauke */
 function fanfare(ctx, t0) {
@@ -289,12 +302,7 @@ function fanfare(ctx, t0) {
   timpani(end, 65.4, 0.7); timpani(end + 0.12, 49, 0.35);
 }
 function playFanfare() {
-  if (!opt("sound", true)) return;
-  try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    if (AC.state === "suspended") AC.resume();
-    fanfare(AC, AC.currentTime + 0.05);
-  } catch (e) {}
+  withAudio((AC, t) => fanfare(AC, t + 0.02));
 }
 const SICHER = 3;
 const known = k => box(k) >= SICHER;
@@ -800,7 +808,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.8 (20.10.2026)";
+const VERSION = "1.9 (20.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
