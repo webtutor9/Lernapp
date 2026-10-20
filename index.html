@@ -86,6 +86,7 @@ h2.sec{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:upperc
 .flash .front{font-size:24px;font-weight:600;line-height:1.3}
 .flash .back{font-size:20px;line-height:1.35}
 .flash .info{font-size:14px;color:var(--muted)}
+.flash .hintx{font-size:14px;color:var(--ink);background:var(--surface-2);border-radius:10px;padding:8px 10px;line-height:1.4}
 .flash .tap{font-size:13px;color:var(--muted);margin-top:8px}
 .flash hr{width:40%;border:0;border-top:1px solid var(--line);margin:8px 0}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
@@ -110,6 +111,7 @@ h2.sec{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:upperc
 .feedback.bad{background:var(--bad-bg);color:var(--bad)}
 .feedback b{display:block;margin-bottom:2px}
 .feedback .sol{color:var(--ink);margin-top:4px}
+.feedback .sol small{display:block;color:var(--muted);margin-top:4px}
 input.answer{width:100%;font-size:19px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);margin-top:14px;outline:none}
 input.answer:focus{border-color:var(--accent)}
 /* Lesen */
@@ -136,6 +138,12 @@ details.aufg summary::-webkit-details-marker{display:none}
 .mist b{display:block}
 .hero{border-radius:var(--radius);overflow:hidden;line-height:0;box-shadow:var(--shadow)}
 .hero img{width:100%;height:auto;display:block}
+#splash{position:fixed;inset:0;z-index:50;background:#10202a url(startbild.jpg) 64% center/cover no-repeat;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+  padding:0 24px calc(48px + env(safe-area-inset-bottom));transition:opacity .6s ease}
+#splash::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 40%,rgba(0,0,0,.55))}
+#splash h2{position:relative;color:#fff;font-size:34px;margin:0 0 18px;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+#splash button{position:relative;background:#fff;color:#1c1c1e;font-weight:700;font-size:19px;padding:16px 40px;border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+#splash.out{opacity:0;pointer-events:none}
 .empty{padding:30px 10px;text-align:center;color:var(--muted)}
 .foot{color:var(--muted);font-size:13px;text-align:center;margin-top:26px}
 .bits{display:flex;gap:10px;justify-content:center;margin-top:16px}
@@ -144,8 +152,10 @@ details.aufg summary::-webkit-details-marker{display:none}
 </head>
 <body>
 <div class="wrap" id="app"></div>
+<div id="splash"><h2>Lernapp</h2><button id="b-go">Los geht’s</button></div>
 
 <script src="latein.js"></script>
+<script src="franzoesisch.js"></script>
 <script src="geschichte.js"></script>
 <script src="informatik.js"></script>
 <script>
@@ -244,6 +254,48 @@ function sadTone() {
     });
   } catch (e) {}
 }
+/* Epische Start-Fanfare: kurzer Auftakt, dann grosser Dur-Akkord mit Pauke */
+function fanfare(ctx, t0) {
+  const out = ctx.createGain(); out.gain.value = 0.55; out.connect(ctx.destination);
+  const brass = (f, start, len, vol) => {
+    [-6, 0, 6].forEach(det => {
+      const o = ctx.createOscillator(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = "sawtooth"; o.frequency.value = f; o.detune.value = det;
+      flt.type = "lowpass"; flt.Q.value = 0.8;
+      flt.frequency.setValueAtTime(500, start);
+      flt.frequency.exponentialRampToValueAtTime(2600, start + 0.08);
+      flt.frequency.exponentialRampToValueAtTime(1400, start + len);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.exponentialRampToValueAtTime(vol / 3, start + 0.04);
+      g.gain.setValueAtTime(vol / 3, start + Math.max(0.05, len - 0.25));
+      g.gain.exponentialRampToValueAtTime(0.0001, start + len);
+      o.connect(flt); flt.connect(g); g.connect(out);
+      o.start(start); o.stop(start + len + 0.05);
+    });
+  };
+  const timpani = (start, f, vol) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(f * 1.5, start); o.frequency.exponentialRampToValueAtTime(f, start + 0.12);
+    g.gain.setValueAtTime(0.0001, start); g.gain.exponentialRampToValueAtTime(vol, start + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, start + 1.1);
+    o.connect(g); g.connect(out); o.start(start); o.stop(start + 1.2);
+  };
+  const N = { C4: 261.6, G4: 392, C5: 523.3, E5: 659.3, G5: 784, C6: 1046.5 };
+  brass(N.G4, t0, 0.14, 0.22); brass(N.G4, t0 + 0.16, 0.14, 0.22); brass(N.C5, t0 + 0.32, 0.36, 0.26);
+  timpani(t0 + 0.32, 65.4, 0.5);
+  brass(N.E5, t0 + 0.7, 0.16, 0.24); brass(N.G5, t0 + 0.86, 0.16, 0.24);
+  const end = t0 + 1.04;
+  [N.C4, N.G4, N.C5, N.E5, N.G5, N.C6].forEach((f, i) => brass(f, end, 1.6, i > 3 ? 0.12 : 0.18));
+  brass(N.C4 / 2, end, 1.6, 0.14);
+  timpani(end, 65.4, 0.7); timpani(end + 0.12, 49, 0.35);
+}
+function playFanfare() {
+  if (!opt("sound", true)) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+    fanfare(AC, AC.currentTime + 0.05);
+  } catch (e) {}
+}
 const SICHER = 3;
 const known = k => box(k) >= SICHER;
 const pct = keys => keys.length ? Math.round(100 * keys.filter(known).length / keys.length) : 0;
@@ -262,6 +314,7 @@ function prioritize(list, keyOf) {
 const FAECHER = window.FAECHER || [];
 const GENUS = { "m.": "maskulin", "f.": "feminin", "n.": "neutrum", "m./f.": "maskulin/feminin" };
 const ART = { n: "Nomen", v: "Verb", a: "Adjektiv", k: "" };
+/* Latein: Latein | Deutsch | Wortart */
 function prepVokabel(line, nr) {
   const [la, de, t] = line.split("|").map(s => s.trim());
   const clean = la.replace(/\(.*?\)|\[.*?\]/g, "").trim();
@@ -283,9 +336,45 @@ function prepVokabel(line, nr) {
   if (!/…/.test(lemma)) v.write = lemma.split("/").map(s => s.trim()).filter(Boolean);
   return v;
 }
+/* Französisch: Französisch | Deutsch | Wortart | Hinweis (optional) */
+const FR_VOKAL = /^[aeiouyâàäéèêëîïôöœûùü]/i;
+function prepFr(line, nr) {
+  const [fr, de, t, h] = line.split("|").map(s => (s || "").trim());
+  const clean = fr.replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim();
+  const v = { key: "fr:" + fr + "|" + de, la: fr, de, t, nr, lemma: clean };
+  if (h) v.hint = h;
+  const first = clean.split("/")[0].trim();
+  if (t === "n") {
+    const par = fr.match(/\(([mf])\.(,\s*pl\.)?\)/);
+    let g = par ? par[1] : /^(un|le)\s/i.test(first) ? "m" : /^(une|la)\s/i.test(first) ? "f" : "";
+    if (/^(un|le)\s/i.test(clean) && /\/\s*(une|la)\s/i.test(clean)) g = "mf";
+    v.genusFr = g;
+    v.plural = /^(les|des)\s/i.test(clean) && !clean.includes("/");
+    const m = first.match(/^(?:un|une|le|la|les|des)\s+(.+)$/i) || first.match(/^(?:de l'|l')(.+)$/i);
+    v.bare = m ? m[1] : first;
+    v.info = ["Nomen", { m: "maskulin", f: "feminin", mf: "maskulin/feminin" }[g] || "", v.plural ? "Plural" : ""].filter(Boolean).join(" · ");
+  } else v.info = ART[t] || "";
+  if (!/…/.test(clean)) {
+    const vars = new Set([clean, ...clean.split("/").map(s => s.trim()).filter(Boolean)]);
+    for (const p of [...vars]) { const s = p.replace(/\b(qn\/qc|qn|qc)\b/g, "").replace(/\s+/g, " ").trim(); if (s) vars.add(s); }
+    if (t === "n") for (const p of [...vars]) {
+      const m = p.match(/^(un|une|le|la)\s+(.+)$/i) || p.match(/^(l')(.+)$/i);
+      if (!m) continue;
+      const rest = m[2], art = m[1].toLowerCase();
+      const gg = art === "un" || art === "le" ? "m" : art === "une" || art === "la" ? "f" : v.genusFr;
+      const voc = FR_VOKAL.test(rest), hh = /^h/i.test(rest);
+      const alts = gg === "m" ? ["un " + rest, voc ? "l'" + rest : "le " + rest] : gg === "f" ? ["une " + rest, voc ? "l'" + rest : "la " + rest] : [];
+      if (hh) alts.push("l'" + rest, (gg === "f" ? "la " : "le ") + rest);
+      alts.forEach(a => vars.add(a));
+    }
+    v.write = [...vars];
+  }
+  return v;
+}
 for (const f of FAECHER) {
   if (f.art === "vokabeln") {
-    f.vok = []; f.lektionen.forEach(l => { l.items = l.v.trim().split("\n").map(x => prepVokabel(x, l.nr)); f.vok.push(...l.items); });
+    const prep = f.parse === "fr" ? prepFr : prepVokabel;
+    f.vok = []; f.lektionen.forEach(l => { l.items = l.v.trim().split("\n").map(x => prep(x, l.nr)); f.vok.push(...l.items); });
   } else {
     f.themen.forEach(t => {
       t.karteKeys = t.karten.map(k => f.id + ":k:" + k[0]);
@@ -298,7 +387,7 @@ for (const f of FAECHER) {
 const fachById = id => FAECHER.find(f => f.id === id);
 function fachKeys(f) { return f.art === "vokabeln" ? f.vok.map(v => v.key) : f.themen.flatMap(t => t.allKeys); }
 function selection(f) {
-  if (!DB.sel[f.id]) DB.sel[f.id] = f.art === "vokabeln" ? ["1", "2", "3", "4", "5"] : f.themen.map(t => t.id);
+  if (!DB.sel[f.id]) DB.sel[f.id] = f.art === "vokabeln" ? (f.standard ? f.standard.slice() : ["1", "2", "3", "4", "5"]) : f.themen.map(t => t.id);
   return DB.sel[f.id];
 }
 const opt = (k, d) => (k in DB.opt ? DB.opt[k] : d);
@@ -347,8 +436,9 @@ VIEWS.fach = ({ id }) => {
     const chip = (val, label, keys, cls = "") => `<button class="chip ${cls} ${sel.includes(val) ? "on" : ""}" data-v="${val}">${label}<span class="pb" style="width:${pct(keys)}%"></span></button>`;
     pickHtml = `<h2 class="sec">Lektionen wählen</h2><div class="chips">
       ${chip("e", "Einführung", [], "wide")}
-      ${f.lektionen.map(l => chip(String(l.nr), l.nr, l.items.map(v => v.key))).join("")}</div>
-      <div class="rowtools"><button class="pill" id="b-all">Alle</button><button class="pill" id="b-none">Keine</button></div>`;
+      ${f.lektionen.map(l => chip(String(l.nr), esc(l.nr), l.items.map(v => v.key))).join("")}</div>
+      <div class="rowtools"><button class="pill" id="b-all">Alle</button><button class="pill" id="b-none">Keine</button></div>
+      ${f.parse === "fr" ? `<p class="hint">E = Entrée, A/B/C = Atelier, L = Coin lecture, + = Extras aus den Kästen</p>` : ""}`;
   } else {
     pickHtml = `<h2 class="sec">Themen wählen</h2><div class="card">${f.themen.map(t => {
       const p = pct(t.allKeys);
@@ -364,7 +454,7 @@ VIEWS.fach = ({ id }) => {
     ["karten", "Karteikarten", "Umdrehen und selbst prüfen", true],
     ["quiz", "Quiz", "Multiple Choice", true],
   ];
-  if (f.art === "vokabeln") modes.push(["schreiben", "Schreiben", "Lateinisches Wort eintippen", true]);
+  if (f.art === "vokabeln") modes.push(["schreiben", "Schreiben", f.schreiben || "Lateinisches Wort eintippen", true]);
   else modes.push(["aufgaben", "Aufgaben", "Fragen mit Lösung", true]);
   if (f.art === "themen" && f.themen.some(t => t.trainer)) modes.push(["trainer", "Rechentrainer", "Immer neue Übungen", hasTrainer]);
   const emptySel = !sel.length;
@@ -398,9 +488,9 @@ VIEWS.lesen = ({ id }) => {
   const f = fachById(id); let html = "";
   if (f.art === "vokabeln") {
     if (selection(f).includes("e")) html += `<div class="card read md"><h3>${esc(f.einfuehrung.titel)}</h3>${md(f.einfuehrung.text)}</div>`;
-    html += selectedLessons(f).map(l => `<div class="card read md"><h3>Lektion ${l.nr}: ${esc(l.titel)}</h3><p>${inline(l.text)}</p>
-      <table class="vtab"><thead><tr><th>Latein</th><th>Deutsch</th></tr></thead><tbody>${l.items.map(v =>
-        `<tr><td>${esc(v.la)}</td><td>${esc(v.de)}${v.info ? `<br><small style="color:var(--muted)">${esc(v.info)}</small>` : ""}</td></tr>`).join("")}</tbody></table></div>`).join("");
+    html += selectedLessons(f).map(l => `<div class="card read md"><h3>${f.kopf === "titel" ? esc(l.titel) : `Lektion ${l.nr}: ${esc(l.titel)}`}</h3><p>${inline(l.text)}</p>
+      <table class="vtab"><thead><tr><th>${esc(f.name)}</th><th>Deutsch</th></tr></thead><tbody>${l.items.map(v =>
+        `<tr><td>${esc(v.la)}</td><td>${esc(v.de)}${v.info ? `<br><small style="color:var(--muted)">${esc(v.info)}</small>` : ""}${v.hint ? `<br><small style="color:var(--muted)">${esc(v.hint)}</small>` : ""}</td></tr>`).join("")}</tbody></table></div>`).join("");
   } else {
     html = selectedTopics(f).map(t => `<div class="card read md"><h3>${esc(t.titel)}</h3>${md(t.text)}</div>`).join("");
   }
@@ -416,9 +506,10 @@ VIEWS.karten = ({ id }) => {
     let items = weakFilter(selectedLessons(f).flatMap(l => l.items), v => v.key);
     deck = prioritize(items, v => v.key).slice(0, 20).map(v => {
       const d = dir === "mix" ? pick(["la", "de"]) : dir;
+      const hint = v.hint ? `<div class="hintx">${esc(v.hint)}</div>` : "";
       return d === "la"
-        ? { key: v.key, front: `<div class="front">${esc(v.la)}</div>`, back: `<div class="back">${esc(v.de)}</div>${v.info ? `<div class="info">${esc(v.info)}</div>` : ""}` }
-        : { key: v.key, front: `<div class="front">${esc(v.de)}</div>${v.info ? `<div class="info">${esc(v.info.split(" · ")[0])}</div>` : ""}`, back: `<div class="back"><strong>${esc(v.la)}</strong></div>${v.info ? `<div class="info">${esc(v.info)}</div>` : ""}` };
+        ? { key: v.key, front: `<div class="front">${esc(v.la)}</div>`, back: `<div class="back">${esc(v.de)}</div>${v.info ? `<div class="info">${esc(v.info)}</div>` : ""}${hint}` }
+        : { key: v.key, front: `<div class="front">${esc(v.de)}</div>${v.info ? `<div class="info">${esc(v.info.split(" · ")[0])}</div>` : ""}`, back: `<div class="back"><strong>${esc(v.la)}</strong></div>${v.info ? `<div class="info">${esc(v.info)}</div>` : ""}${hint}` };
     });
   } else {
     let items = selectedTopics(f).flatMap(t => t.karten.map((k, i) => ({ key: t.karteKeys[i], k, t })));
@@ -431,9 +522,10 @@ function runCards(f, deck) {
   /* «Nochmal»-Karten kommen in derselben Runde wieder, bis sie gewusst sind. */
   const queue = deck.slice(), total = deck.length, missed = new Set();
   let flipped = false, done = 0;
-  const dirSeg = f.art === "vokabeln" ? `<div class="seg" style="margin-bottom:12px">${[["la", "La → De"], ["de", "De → La"], ["mix", "Gemischt"]].map(([v, l]) => `<button data-d="${v}" class="${opt("dir", "la") === v ? "on" : ""}">${l}</button>`).join("")}</div>` : "";
+  const kz = f.kuerzel || "La";
+  const dirSeg = f.art === "vokabeln" ? `<div class="seg" style="margin-bottom:12px">${[["la", kz + " → De"], ["de", "De → " + kz], ["mix", "Gemischt"]].map(([v, l]) => `<button data-d="${v}" class="${opt("dir", "la") === v ? "on" : ""}">${l}</button>`).join("")}</div>` : "";
   function draw() {
-    if (!total) return shell("Karteikarten", dirSeg + emptyMsg());
+    if (!total) { shell("Karteikarten", dirSeg + emptyMsg()); return bindDir(); }
     if (!queue.length) return finish();
     const c = queue[0], again = missed.has(c.key);
     shell("Karteikarten", `${dirSeg}<div class="progress"><span>${done} / ${total} gewusst</span><span class="meter"><i style="width:${100 * done / total}%"></i></span></div>
@@ -465,13 +557,17 @@ function emptyMsg() {
 
 /* --- Quiz --- */
 function tokens(de) {
-  return de.toLowerCase().replace(/\(.*?\)/g, " ").split(/[,;\/]|…/).map(s => s.replace(/^\s*(der|die|das|ein|eine|einer|sich|etw\.|jdn\.|jmdn\.|zu jmdm\.)\s+/, "").replace(/[!?.]/g, "").trim()).filter(Boolean);
+  return de.toLowerCase().replace(/\(.*?\)/g, " ").split(/[,;\/]|…/).map(s => s.replace(/^\s*(der|die|das|ein|eine|einer|sich|etw\.|jdn\.|jmdn\.|jdm\.|zu jmdm\.|hier:)\s+/, "").replace(/[!?.]/g, "").trim()).filter(Boolean);
 }
 const overlap = (a, b) => { const ta = tokens(a), tb = tokens(b); return ta.some(x => tb.includes(x)); };
-const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z\- ]/g, "").replace(/\s+/g, " ").trim();
-function distractors(v, pool, n, ok, same) {
+/* Vergleich ohne Akzente, Längezeichen, Satzzeichen und Gross-/Kleinschreibung */
+const norm = s => String(s).replace(/œ/g, "oe").replace(/Œ/g, "oe").replace(/æ/g, "ae").replace(/[’']\s*/g, "")
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\- ]/g, "").replace(/\s+/g, " ").trim();
+/* Vergleich mit Akzenten, aber ohne Satzzeichen und Gross-/Kleinschreibung */
+const loose = s => String(s).replace(/[’]/g, "'").replace(/'\s*/g, "'").toLowerCase().replace(/[!?.,;:]/g, "").replace(/\s+/g, " ").trim();
+function distractors(v, pool, n, ok, same, f) {
   const out = [], used = new Set();
-  for (const cand of [pool.filter(x => x.t === v.t), FAECHER[0].vok.filter(x => x.t === v.t), FAECHER[0].vok]) {
+  for (const cand of [pool.filter(x => x.t === v.t), f.vok.filter(x => x.t === v.t), f.vok]) {
     for (const x of shuffle(cand)) {
       if (out.length >= n) break;
       if (x === v || !ok(x) || out.some(o => same(o, x))) continue;
@@ -482,37 +578,49 @@ function distractors(v, pool, n, ok, same) {
   }
   return out;
 }
-function latinQuestion(v, pool) {
+function bedeutungFrage(v, pool, f) {
+  const ds = distractors(v, pool, 3, x => !overlap(x.de, v.de) && norm(x.lemma) !== norm(v.lemma) && x.de !== v.de, (a, b) => overlap(a.de, b.de), f);
+  const opts = shuffle([v.de, ...ds.map(x => x.de)]);
+  return { key: v.key, kind: "Was bedeutet …?", prompt: v.la, o: opts, r: opts.indexOf(v.de), e: `${v.la} = ${v.de}` };
+}
+function wortFrage(v, pool, f) {
+  const ds = distractors(v, pool, 3, x => !overlap(x.de, v.de) && norm(x.lemma) !== norm(v.lemma), (a, b) => norm(a.lemma) === norm(b.lemma), f);
+  const opts = shuffle([v.lemma, ...ds.map(x => x.lemma)]);
+  return { key: v.key, kind: `Wie heisst auf ${f.name} …?`, prompt: v.de, o: opts, r: opts.indexOf(v.lemma), e: `${v.de} = ${v.la}` };
+}
+function latinQuestion(v, pool, f) {
   const kinds = ["lade", "lade", "dela", "dela"];
   if (v.genus && GENUS[v.genus] && v.genus !== "m./f.") kinds.push("genus");
   if (v.perf) kinds.push("perf");
   const k = pick(kinds);
-  if (k === "lade") {
-    const ds = distractors(v, pool, 3, x => !overlap(x.de, v.de) && norm(x.lemma) !== norm(v.lemma), (a, b) => overlap(a.de, b.de));
-    const opts = shuffle([v.de, ...ds.map(x => x.de)]);
-    return { key: v.key, kind: "Was bedeutet …?", prompt: v.la, o: opts, r: opts.indexOf(v.de), e: `${v.la} = ${v.de}` };
-  }
-  if (k === "dela") {
-    const ds = distractors(v, pool, 3, x => !overlap(x.de, v.de) && norm(x.lemma) !== norm(v.lemma), (a, b) => norm(a.lemma) === norm(b.lemma));
-    const opts = shuffle([v.lemma, ...ds.map(x => x.lemma)]);
-    return { key: v.key, kind: "Wie heisst auf Latein …?", prompt: v.de, o: opts, r: opts.indexOf(v.lemma), e: `${v.de} = ${v.la}` };
-  }
+  if (k === "lade") return bedeutungFrage(v, pool, f);
+  if (k === "dela") return wortFrage(v, pool, f);
   if (k === "genus") {
     const opts = ["maskulin", "feminin", "neutrum"];
     return { key: v.key, kind: "Welches Genus hat …?", prompt: `${v.lemma} (${v.de})`, o: opts, r: opts.indexOf(GENUS[v.genus]), e: `${v.la} – ${GENUS[v.genus]}` };
   }
-  const ds = distractors(v, pool, 3, x => x.perf && norm(x.perf) !== norm(v.perf), (a, b) => norm(a.perf) === norm(b.perf));
+  const ds = distractors(v, pool, 3, x => x.perf && norm(x.perf) !== norm(v.perf), (a, b) => norm(a.perf) === norm(b.perf), f);
   const opts = shuffle([v.perf, ...ds.map(x => x.perf)]);
   return { key: v.key, kind: "Perfekt (ich-Form) von …?", prompt: `${v.lemma} (${v.de.split(",")[0]})`, o: opts, r: opts.indexOf(v.perf), e: v.la };
+}
+function frenchQuestion(v, pool, f) {
+  const kinds = ["lade", "lade", "dela", "dela"];
+  if (v.genusFr === "m" || v.genusFr === "f") kinds.push("genus");
+  const k = pick(kinds);
+  if (k === "lade") return bedeutungFrage(v, pool, f);
+  if (k === "dela") return wortFrage(v, pool, f);
+  const opts = ["maskulin (un / le)", "feminin (une / la)"];
+  return { key: v.key, kind: "Männlich oder weiblich?", prompt: `${v.bare} (${v.de})`, o: opts, r: v.genusFr === "m" ? 0 : 1, e: v.la };
 }
 VIEWS.quiz = ({ id }) => {
   const f = fachById(id); let qs = [];
   if (f.art === "vokabeln") {
     const pool = selectedLessons(f).flatMap(l => l.items);
     const items = prioritize(weakFilter(pool, v => v.key), v => v.key).slice(0, 10);
-    qs = items.map(v => latinQuestion(v, pool));
+    const ask = f.parse === "fr" ? frenchQuestion : latinQuestion;
+    qs = items.map(v => ask(v, pool, f));
     if (selection(f).includes("e")) {
-      const intro = shuffle(f.einfuehrung.quiz).slice(0, pool.length ? 3 : 6).map(q => ({ key: "latein:q:" + q.f, kind: "Einführung", prompt: q.f, o: q.o, r: q.r, e: q.e, shuffle: true }));
+      const intro = shuffle(f.einfuehrung.quiz).slice(0, pool.length ? 3 : 6).map(q => ({ key: f.id + ":q:" + q.f, kind: "Einführung", prompt: q.f, o: q.o, r: q.r, e: q.e, shuffle: true }));
       qs = shuffle([...qs, ...intro]);
     }
   } else {
@@ -550,7 +658,7 @@ function runQuiz(qs) {
   draw();
 }
 
-/* --- Schreiben (Latein) --- */
+/* --- Schreiben (Vokabelfächer) --- */
 VIEWS.schreiben = ({ id }) => {
   const f = fachById(id);
   const items = prioritize(weakFilter(selectedLessons(f).flatMap(l => l.items).filter(v => v.write), v => v.key), v => v.key).slice(0, 10);
@@ -561,16 +669,16 @@ VIEWS.schreiben = ({ id }) => {
     const v = items[i], done = answer !== undefined;
     let fb = "";
     if (done) {
-      const exact = v.write.some(w => w === answer.trim());
-      const ok = exact || v.write.some(w => norm(w) === norm(answer));
-      fb = `<div class="feedback ${ok ? "ok" : "bad"}"><b>${ok ? (exact ? "Richtig!" : "Richtig – mit Längezeichen:") : (answer.trim() ? "Leider falsch." : "Lösung:")}</b><span class="sol">${esc(v.la)}</span></div>
+      const exact = v.write.some(w => loose(w) === loose(answer));
+      const ok = answer.trim() !== "" && (exact || v.write.some(w => norm(w) === norm(answer)));
+      fb = `<div class="feedback ${ok ? "ok" : "bad"}"><b>${ok ? (exact ? "Richtig!" : (f.akzentText || "Richtig – mit Längezeichen:")) : (answer.trim() ? "Leider falsch." : "Lösung:")}</b><span class="sol">${esc(v.la)}${v.hint ? `<small>${esc(v.hint)}</small>` : ""}</span></div>
         <button class="btn primary full" id="b-next">${i + 1 < items.length ? "Weiter" : "Auswertung"}</button>`;
     }
     shell("Schreiben", `<div class="progress"><span>${i + 1} / ${items.length}</span><span class="meter"><i style="width:${100 * i / items.length}%"></i></span><span>${score} ✓</span></div>
-      <div class="card q"><div class="kind">Wie heisst auf Latein …?${v.info ? " · " + esc(v.info.split(" · ")[0]) : ""}</div><div class="prompt">${esc(v.de)}</div></div>
-      <input class="answer" id="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Grundform eintippen" ${done ? `value="${esc(answer)}" disabled` : ""}>
+      <div class="card q"><div class="kind">Wie heisst auf ${esc(f.name)} …?${v.info ? " · " + esc(v.info.split(" · ")[0]) : ""}</div><div class="prompt">${esc(v.de)}</div></div>
+      <input class="answer" id="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${esc(f.platzhalter || "Grundform eintippen")}" ${done ? `value="${esc(answer)}" disabled` : ""}>
       ${done ? fb : `<div class="actions"><button class="btn ghost" id="b-skip">Weiss nicht</button><button class="btn primary" id="b-check">Prüfen</button></div>
-      <p class="hint">Längezeichen (ā, ē …) musst du nicht tippen.</p>`}`);
+      <p class="hint">${esc(f.schreibHinweis || "Längezeichen (ā, ē …) musst du nicht tippen.")}</p>`}`);
     if (!done) {
       const inp = $("#inp"); setTimeout(() => inp.focus(), 50);
       const check = (val) => {
@@ -685,18 +793,22 @@ VIEWS.settings = () => {
   document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => {
     const f = fachById(b.dataset.r);
     if (!confirm(`Lernstand für ${f.name} wirklich löschen?`)) return;
-    const pre = f.art === "vokabeln" ? ["la:", "latein:"] : [f.id + ":"];
+    const pre = f.art === "vokabeln" ? (f.prefix || ["la:", "latein:"]) : [f.id + ":"];
     Object.keys(DB.items).forEach(k => { if (pre.some(p => k.startsWith(p))) delete DB.items[k]; });
     save(); render();
   });
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.5 (18.10.2026)";
+const VERSION = "1.8 (20.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
-if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+$("#b-go").onclick = () => {
+  playFanfare();
+  const sp = $("#splash"); sp.classList.add("out"); setTimeout(() => sp.remove(), 700);
+};
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(r => r.update()).catch(() => {});
 </script>
 </body>
 </html>

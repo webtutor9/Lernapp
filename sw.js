@@ -1,6 +1,6 @@
 /* Offline-Speicher der Lernapp.
    Bei jeder neuen Version die Nummer in CACHE erhöhen und neue Dateien in FILES eintragen. */
-const CACHE = "lernapp-v6";
+const CACHE = "lernapp-v9";
 const FILES = [
   "./",
   "./index.html",
@@ -10,6 +10,7 @@ const FILES = [
   "./icon-512.png",
   "./startbild.jpg",
   "./latein.js",
+  "./franzoesisch.js",
   "./geschichte.js",
   "./informatik.js"
 ];
@@ -30,7 +31,7 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "no-cache" })
       .then(res => {
         if (res.ok && new URL(e.request.url).origin === location.origin) {
           const copy = res.clone();
