@@ -215,11 +215,26 @@ function mark(k, ok) {
 }
 /* Erfolgston (wird im Browser erzeugt, keine Audiodatei nötig) */
 let AC = null;
+/* iPhone: Ohne diese Einstellung schaltet der Lautlos-Schalter alle Töne der Web-App stumm.
+   «playback» lässt die App wie eine Musik-App klingen (iOS 17+). Für ältere Geräte zusätzlich
+   eine stumme Audiodatei bei der ersten Berührung abspielen, das hat dieselbe Wirkung. */
+function audioSessionPlayback() {
+  try { if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; } catch (e) {}
+}
+audioSessionPlayback();
+let SILENT = null;
+function unlockMedia() {
+  try {
+    if (!SILENT) { SILENT = new Audio("data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA=="); SILENT.setAttribute("playsinline", ""); }
+    const p = SILENT.play(); if (p && p.catch) p.catch(() => {});
+  } catch (e) {}
+}
 /* Gemeinsamer Tonstart. iOS hält den Audio-Kontext nach Hintergrund oder Sperre oft an
    («suspended» oder «interrupted»). Darum: Kontext bei Bedarf neu erzeugen, aufwecken
    und die Töne erst spielen, wenn er wirklich läuft. */
 function withAudio(play) {
   if (!opt("sound", true)) return;
+  audioSessionPlayback();
   try {
     if (!AC || AC.state === "closed") AC = new (window.AudioContext || window.webkitAudioContext)();
     const go = () => { try { play(AC, AC.currentTime + 0.03); } catch (e) {} };
@@ -234,6 +249,7 @@ document.addEventListener("visibilitychange", () => {
 });
 /* Jede Berührung weckt einen angehaltenen Kontext auf. */
 ["pointerdown", "touchend", "keydown"].forEach(ev => document.addEventListener(ev, () => {
+  audioSessionPlayback();
   if (AC && AC.state !== "running") { try { AC.resume(); } catch (e) {} }
 }, { capture: true, passive: true }));
 function jingle() {
@@ -317,6 +333,7 @@ if (window.speechSynthesis) { try { speechSynthesis.getVoices(); speechSynthesis
 function sayHello(delay) {
   if (!opt("sound", true) || !opt("greet", true) || !window.speechSynthesis) return;
   const s = window.speechSynthesis;
+  audioSessionPlayback();
   /* iOS erlaubt Sprache nur nach einer Berührung: darum sofort eine stumme Äusserung als Freischaltung */
   if (delay) { try { const u0 = new SpeechSynthesisUtterance(" "); u0.volume = 0; s.speak(u0); } catch (e) {} }
   setTimeout(() => {
@@ -822,7 +839,8 @@ VIEWS.settings = () => {
     <button class="switch ${opt("greet", true) ? "on" : ""}" id="b-greet" aria-label="Begrüssung"></button></div>
     <div class="card" style="padding:14px 16px;margin-top:10px"><label for="inp-name" style="font-weight:600">Dein Name</label>
     <input class="answer" id="inp-name" style="margin-top:8px" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="30" placeholder="Vorname" value="${esc(opt("name", "") || "")}">
-    <div class="rowtools" style="margin-top:12px"><button class="pill" id="b-hello">Probe hören</button></div></div>
+    <div class="rowtools" style="margin-top:12px"><button class="pill" id="b-hello">Probe hören</button><button class="pill" id="b-tone">Ton testen</button></div>
+    <small id="diag" style="display:block;margin-top:10px;color:var(--muted)"></small></div>
     <p class="hint">Der Name wird nur auf diesem Gerät gespeichert.</p>
     <h2 class="sec">Lernstand zurücksetzen</h2><div class="card">
     ${FAECHER.map(f => `<button class="topic" data-r="${f.id}"><span class="tt"><b>${esc(f.name)}</b><small>${pct(fachKeys(f))} % sicher</small></span><span style="color:var(--bad);font-size:15px">Zurücksetzen</span></button>`).join("")}</div>
@@ -832,7 +850,12 @@ VIEWS.settings = () => {
   $("#b-sound").onclick = () => { setOpt("sound", !opt("sound", true)); if (opt("sound", true)) jingle(); render(); };
   $("#b-greet").onclick = () => { setOpt("greet", !opt("greet", true)); render(); };
   $("#inp-name").addEventListener("input", e => setOpt("name", e.target.value.trim()));
-  $("#b-hello").onclick = () => { setOpt("name", $("#inp-name").value.trim()); sayHello(0); };
+  const diag = () => setTimeout(() => {
+    const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [], v = pickVoice();
+    $("#diag").textContent = `Audio: ${AC ? AC.state : "–"} · Sitzung: ${navigator.audioSession ? navigator.audioSession.type : "nicht verfügbar"} · Sprache: ${window.speechSynthesis ? "ja" : "nein"} · deutsche Stimmen: ${vs.filter(x => /^de/i.test(x.lang)).length}${v ? " (" + v.name + ")" : ""}`;
+  }, 600);
+  $("#b-hello").onclick = () => { unlockMedia(); setOpt("name", $("#inp-name").value.trim()); sayHello(0); diag(); };
+  $("#b-tone").onclick = () => { unlockMedia(); jingle(); diag(); };
   document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => {
     const f = fachById(b.dataset.r);
     if (!confirm(`Lernstand für ${f.name} wirklich löschen?`)) return;
@@ -843,11 +866,12 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.11 (28.10.2026)";
+const VERSION = "1.12 (28.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
 $("#b-go").onclick = () => {
+  unlockMedia();
   playFanfare();
   sayHello(2300);   /* nach dem Schlussakkord der Fanfare */
   const sp = $("#splash"); sp.classList.add("out"); setTimeout(() => sp.remove(), 700);
