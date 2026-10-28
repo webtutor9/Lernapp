@@ -304,6 +304,32 @@ function fanfare(ctx, t0) {
 function playFanfare() {
   withAudio((AC, t) => fanfare(AC, t + 0.02));
 }
+/* Gesprochene Begrüssung mit der deutschen Systemstimme des Geräts.
+   Der Name steht nur in den Einstellungen auf dem Gerät, nicht im (öffentlichen) Code. */
+function pickVoice() {
+  const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
+  const de = vs.filter(v => /^de/i.test(v.lang));
+  const score = v => (/premium|enhanced|erweitert|verbessert/i.test(v.name + " " + v.voiceURI) ? 4 : 0)
+    + (/^de[-_]DE/i.test(v.lang) ? 2 : 0) + (v.localService ? 1 : 0);
+  return de.sort((a, b) => score(b) - score(a))[0] || null;
+}
+if (window.speechSynthesis) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch (e) {} }
+function sayHello(delay) {
+  if (!opt("sound", true) || !opt("greet", true) || !window.speechSynthesis) return;
+  const s = window.speechSynthesis;
+  /* iOS erlaubt Sprache nur nach einer Berührung: darum sofort eine stumme Äusserung als Freischaltung */
+  if (delay) { try { const u0 = new SpeechSynthesisUtterance(" "); u0.volume = 0; s.speak(u0); } catch (e) {} }
+  setTimeout(() => {
+    try {
+      const name = String(opt("name", "") || "").trim();
+      const u = new SpeechSynthesisUtterance(name ? `Hey ${name}, schön, dass du hier bist!` : "Hey, schön, dass du hier bist!");
+      u.lang = "de-DE";
+      const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; }
+      u.rate = 1; u.pitch = 1.05; u.volume = 1;
+      s.speak(u);
+    } catch (e) {}
+  }, delay || 0);
+}
 const SICHER = 3;
 const known = k => box(k) >= SICHER;
 const pct = keys => keys.length ? Math.round(100 * keys.filter(known).length / keys.length) : 0;
@@ -792,12 +818,21 @@ VIEWS.trainer = ({ id }) => {
 VIEWS.settings = () => {
   shell("Einstellungen", `<h2 class="sec">Ton</h2><div class="card toggle"><span>Töne bei richtiger und falscher Antwort<br><small style="color:var(--muted)">Beim iPhone muss der Lautlos-Schalter aus sein.</small></span>
     <button class="switch ${opt("sound", true) ? "on" : ""}" id="b-sound" aria-label="Töne"></button></div>
+    <h2 class="sec">Begrüssung</h2><div class="card toggle"><span>Nach der Fanfare begrüsst dich die App mit Namen</span>
+    <button class="switch ${opt("greet", true) ? "on" : ""}" id="b-greet" aria-label="Begrüssung"></button></div>
+    <div class="card" style="padding:14px 16px;margin-top:10px"><label for="inp-name" style="font-weight:600">Dein Name</label>
+    <input class="answer" id="inp-name" style="margin-top:8px" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="30" placeholder="Vorname" value="${esc(opt("name", "") || "")}">
+    <div class="rowtools" style="margin-top:12px"><button class="pill" id="b-hello">Probe hören</button></div></div>
+    <p class="hint">Der Name wird nur auf diesem Gerät gespeichert.</p>
     <h2 class="sec">Lernstand zurücksetzen</h2><div class="card">
     ${FAECHER.map(f => `<button class="topic" data-r="${f.id}"><span class="tt"><b>${esc(f.name)}</b><small>${pct(fachKeys(f))} % sicher</small></span><span style="color:var(--bad);font-size:15px">Zurücksetzen</span></button>`).join("")}</div>
     <p class="hint">Der Lernstand ist nur auf diesem Gerät gespeichert. Auf iPhone und iPad wird getrennt gezählt.</p>
     <p class="hint">Ein Eintrag gilt als «sicher», wenn er dreimal hintereinander richtig war. Bei einem Fehler beginnt er wieder von vorn.</p>
     <p class="foot">Lernapp · Version ${VERSION}</p>`);
   $("#b-sound").onclick = () => { setOpt("sound", !opt("sound", true)); if (opt("sound", true)) jingle(); render(); };
+  $("#b-greet").onclick = () => { setOpt("greet", !opt("greet", true)); render(); };
+  $("#inp-name").addEventListener("input", e => setOpt("name", e.target.value.trim()));
+  $("#b-hello").onclick = () => { setOpt("name", $("#inp-name").value.trim()); sayHello(0); };
   document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => {
     const f = fachById(b.dataset.r);
     if (!confirm(`Lernstand für ${f.name} wirklich löschen?`)) return;
@@ -808,12 +843,13 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.10 (28.10.2026)";
+const VERSION = "1.11 (28.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
 $("#b-go").onclick = () => {
   playFanfare();
+  sayHello(2300);   /* nach dem Schlussakkord der Fanfare */
   const sp = $("#splash"); sp.classList.add("out"); setTimeout(() => sp.remove(), 700);
 };
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(r => r.update()).catch(() => {});
