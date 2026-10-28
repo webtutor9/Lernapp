@@ -144,6 +144,10 @@ details.aufg summary::-webkit-details-marker{display:none}
 #splash h2{position:relative;color:#fff;font-size:34px;margin:0 0 18px;text-shadow:0 2px 10px rgba(0,0,0,.5)}
 #splash button{position:relative;background:#fff;color:#1c1c1e;font-weight:700;font-size:19px;padding:16px 40px;border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
 #splash.out{opacity:0;pointer-events:none}
+#sp-tap{position:relative;color:#fff;font-size:18px;font-weight:600;margin:0 0 24px;padding:12px 26px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.5);display:none;animation:pulse 1.6s ease-in-out infinite}
+#splash.wait #sp-tap{display:block}#splash.wait #b-go{display:none}
+#b-go{animation:fadein .5s ease}
+@keyframes pulse{50%{opacity:.7}}@keyframes fadein{from{opacity:0;transform:translateY(8px)}}
 .empty{padding:30px 10px;text-align:center;color:var(--muted)}
 .foot{color:var(--muted);font-size:13px;text-align:center;margin-top:26px}
 .bits{display:flex;gap:10px;justify-content:center;margin-top:16px}
@@ -152,7 +156,7 @@ details.aufg summary::-webkit-details-marker{display:none}
 </head>
 <body>
 <div class="wrap" id="app"></div>
-<div id="splash"><h2>Lernapp</h2><button id="b-go">Los geht’s</button></div>
+<div id="splash"><h2>Lernapp</h2><p id="sp-tap">Tippen zum Starten</p><button id="b-go">Los geht’s</button></div>
 
 <script src="latein.js"></script>
 <script src="franzoesisch.js"></script>
@@ -284,8 +288,9 @@ function sadTone() {
   });
 }
 /* Epische Start-Fanfare: kurzer Auftakt, dann grosser Dur-Akkord mit Pauke */
+let FANOUT = null;
 function fanfare(ctx, t0) {
-  const out = ctx.createGain(); out.gain.value = 0.55; out.connect(ctx.destination);
+  const out = ctx.createGain(); out.gain.value = 0.55; out.connect(ctx.destination); FANOUT = out;
   const brass = (f, start, len, vol) => {
     [-6, 0, 6].forEach(det => {
       const o = ctx.createOscillator(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
@@ -320,32 +325,28 @@ function fanfare(ctx, t0) {
 function playFanfare() {
   withAudio((AC, t) => fanfare(AC, t + 0.02));
 }
-/* Gesprochene Begrüssung mit der deutschen Systemstimme des Geräts.
-   Der Name steht nur in den Einstellungen auf dem Gerät, nicht im (öffentlichen) Code. */
-function pickVoice() {
-  const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
-  const de = vs.filter(v => /^de/i.test(v.lang));
-  const score = v => (/premium|enhanced|erweitert|verbessert/i.test(v.name + " " + v.voiceURI) ? 4 : 0)
-    + (/^de[-_]DE/i.test(v.lang) ? 2 : 0) + (v.localService ? 1 : 0);
-  return de.sort((a, b) => score(b) - score(a))[0] || null;
+/* Begrüssung beim «Los geht's»: aufgenommene Männerstimme (begruessung.mp3), abgespielt über Web Audio
+   wie die übrigen Töne. Läuft die Fanfare noch, wird sie dabei leiser. */
+let HELLO = null;
+function loadHello() {
+  if (!HELLO) HELLO = fetch("begruessung.mp3").then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
+    .then(ab => { if (!ab) HELLO = null; return ab; });
+  return HELLO;
 }
-if (window.speechSynthesis) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch (e) {} }
-function sayHello(delay) {
-  if (!opt("sound", true) || !opt("greet", true) || !window.speechSynthesis) return;
-  const s = window.speechSynthesis;
-  audioSessionPlayback();
-  /* iOS erlaubt Sprache nur nach einer Berührung: darum sofort eine stumme Äusserung als Freischaltung */
-  if (delay) { try { const u0 = new SpeechSynthesisUtterance(" "); u0.volume = 0; s.speak(u0); } catch (e) {} }
-  setTimeout(() => {
-    try {
-      const name = String(opt("name", "") || "").trim();
-      const u = new SpeechSynthesisUtterance(name ? `Hey ${name}, schön, dass du hier bist!` : "Hey, schön, dass du hier bist!");
-      u.lang = "de-DE";
-      const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; }
-      u.rate = 1; u.pitch = 1.05; u.volume = 1;
-      s.speak(u);
-    } catch (e) {}
-  }, delay || 0);
+loadHello();
+function sayHello() {
+  if (!opt("greet", true)) return;
+  withAudio(AC => {
+    if (FANOUT) { try { const g = FANOUT.gain; g.cancelScheduledValues(AC.currentTime); g.setValueAtTime(g.value, AC.currentTime); g.linearRampToValueAtTime(0.12, AC.currentTime + 0.25); } catch (e) {} }
+    loadHello().then(ab => {
+      if (!ab) return;
+      AC.decodeAudioData(ab.slice(0), buf => {
+        const src = AC.createBufferSource(), g = AC.createGain();
+        src.buffer = buf; g.gain.value = 1; src.connect(g); g.connect(AC.destination);
+        src.start(AC.currentTime + 0.05);
+      }, () => {});
+    });
+  });
 }
 const SICHER = 3;
 const known = k => box(k) >= SICHER;
@@ -835,13 +836,10 @@ VIEWS.trainer = ({ id }) => {
 VIEWS.settings = () => {
   shell("Einstellungen", `<h2 class="sec">Ton</h2><div class="card toggle"><span>Töne bei richtiger und falscher Antwort<br><small style="color:var(--muted)">Beim iPhone muss der Lautlos-Schalter aus sein.</small></span>
     <button class="switch ${opt("sound", true) ? "on" : ""}" id="b-sound" aria-label="Töne"></button></div>
-    <h2 class="sec">Begrüssung</h2><div class="card toggle"><span>Nach der Fanfare begrüsst dich die App mit Namen</span>
+    <h2 class="sec">Begrüssung</h2><div class="card toggle"><span>Bei «Los geht’s» begrüsst dich die App</span>
     <button class="switch ${opt("greet", true) ? "on" : ""}" id="b-greet" aria-label="Begrüssung"></button></div>
-    <div class="card" style="padding:14px 16px;margin-top:10px"><label for="inp-name" style="font-weight:600">Dein Name</label>
-    <input class="answer" id="inp-name" style="margin-top:8px" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="30" placeholder="Vorname" value="${esc(opt("name", "") || "")}">
-    <div class="rowtools" style="margin-top:12px"><button class="pill" id="b-hello">Probe hören</button><button class="pill" id="b-tone">Ton testen</button></div>
+    <div class="card" style="padding:14px 16px;margin-top:10px"><div class="rowtools" style="margin:0"><button class="pill" id="b-hello">Probe hören</button><button class="pill" id="b-tone">Ton testen</button></div>
     <small id="diag" style="display:block;margin-top:10px;color:var(--muted)"></small></div>
-    <p class="hint">Der Name wird nur auf diesem Gerät gespeichert.</p>
     <h2 class="sec">Lernstand zurücksetzen</h2><div class="card">
     ${FAECHER.map(f => `<button class="topic" data-r="${f.id}"><span class="tt"><b>${esc(f.name)}</b><small>${pct(fachKeys(f))} % sicher</small></span><span style="color:var(--bad);font-size:15px">Zurücksetzen</span></button>`).join("")}</div>
     <p class="hint">Der Lernstand ist nur auf diesem Gerät gespeichert. Auf iPhone und iPad wird getrennt gezählt.</p>
@@ -849,12 +847,10 @@ VIEWS.settings = () => {
     <p class="foot">Lernapp · Version ${VERSION}</p>`);
   $("#b-sound").onclick = () => { setOpt("sound", !opt("sound", true)); if (opt("sound", true)) jingle(); render(); };
   $("#b-greet").onclick = () => { setOpt("greet", !opt("greet", true)); render(); };
-  $("#inp-name").addEventListener("input", e => setOpt("name", e.target.value.trim()));
   const diag = () => setTimeout(() => {
-    const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [], v = pickVoice();
-    $("#diag").textContent = `Audio: ${AC ? AC.state : "–"} · Sitzung: ${navigator.audioSession ? navigator.audioSession.type : "nicht verfügbar"} · Sprache: ${window.speechSynthesis ? "ja" : "nein"} · deutsche Stimmen: ${vs.filter(x => /^de/i.test(x.lang)).length}${v ? " (" + v.name + ")" : ""}`;
+    $("#diag").textContent = `Audio: ${AC ? AC.state : "–"} · Sitzung: ${navigator.audioSession ? navigator.audioSession.type : "nicht verfügbar"} · Begrüssung: ${HELLO ? "geladen" : "nicht geladen"} · Töne: ${opt("sound", true) ? "an" : "aus"}`;
   }, 600);
-  $("#b-hello").onclick = () => { unlockMedia(); setOpt("name", $("#inp-name").value.trim()); sayHello(0); diag(); };
+  $("#b-hello").onclick = () => { unlockMedia(); sayHello(); diag(); };
   $("#b-tone").onclick = () => { unlockMedia(); jingle(); diag(); };
   document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => {
     const f = fachById(b.dataset.r);
@@ -866,15 +862,29 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.12 (28.10.2026)";
+const VERSION = "1.13 (28.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
+/* Startbildschirm: Fanfare beim Öffnen, Begrüssung bei «Los geht's».
+   iPhone und iPad erlauben Töne erst nach einer Berührung. Klappt das automatische Abspielen
+   nicht, zeigt der Startbildschirm «Tippen zum Starten»: der erste Tipp spielt die Fanfare
+   und blendet «Los geht's» ein. */
+const splash = $("#splash");
+let fanfareDone = !opt("sound", true);
+function startFanfare() {
+  if (fanfareDone) return;
+  fanfareDone = true; unlockMedia(); playFanfare(); splash.classList.remove("wait");
+}
+if (!fanfareDone) {
+  try { AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "running") startFanfare(); } catch (e) {}
+  if (!fanfareDone) splash.classList.add("wait");
+}
+splash.addEventListener("click", e => { if (splash.classList.contains("wait")) { e.stopPropagation(); startFanfare(); } });
 $("#b-go").onclick = () => {
   unlockMedia();
-  playFanfare();
-  sayHello(2300);   /* nach dem Schlussakkord der Fanfare */
-  const sp = $("#splash"); sp.classList.add("out"); setTimeout(() => sp.remove(), 700);
+  sayHello();
+  splash.classList.add("out"); setTimeout(() => splash.remove(), 700);
 };
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(r => r.update()).catch(() => {});
 </script>

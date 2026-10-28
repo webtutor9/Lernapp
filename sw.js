@@ -1,6 +1,6 @@
 /* Offline-Speicher der Lernapp.
    Bei jeder neuen Version die Nummer in CACHE erhöhen und neue Dateien in FILES eintragen. */
-const CACHE = "lernapp-v13";
+const CACHE = "lernapp-v14";
 const FILES = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const FILES = [
   "./icon-192.png",
   "./icon-512.png",
   "./startbild.jpg",
+  "./begruessung.mp3",
   "./latein.js",
   "./franzoesisch.js",
   "./geschichte.js",
