@@ -1,4 +1,4 @@
-/* Fach Geschichte – Urgeschichte, Ägypten, frühe Hochkulturen */
+/* Fach Geschichte – Urgeschichte, Ägypten, frühe Hochkulturen, Chronologie Ägyptens */
 (window.FAECHER = window.FAECHER || []).push({
   id: "geschichte",
   name: "Geschichte",
@@ -480,6 +480,119 @@ Aussprache: «Hwang-**ho**», nicht «Huanghu». Das «ho» bedeutet auf Chinesi
     { f: "Welche Städte hatten schon Kanalisation?", o: ["Städte der Harappa-Kultur", "Städte der Altsteinzeit", "Städte im Mittelalter in Uri", "Keine"], r: 0, e: "Die schachbrettförmigen Harappa-Städte hatten Backsteinhäuser und Kanalisation." },
     { f: "Welche Hochkultur entstand als letzte der vier (um 1500 v. Chr.)?", o: ["Mesopotamien", "Ägypten", "Indus-Kultur", "China"], r: 3, e: "Reihenfolge: Mesopotamien, Ägypten, Indus, China." },
     { f: "An welchem Fluss lag die frühe Hochkultur Chinas?", o: ["Indus", "Hwangho", "Nil", "Euphrat"], r: 1, e: "Hwang-ho – «ho» heisst Fluss." }
+  ]
+},
+{
+  id: "chronologie",
+  titel: "Chronologie des Alten Ägypten",
+  text: `Das Alte Ägypten dauerte fast **3'000 Jahre**, von etwa 3100 v. Chr. bis 30 v. Chr. Damit man den Überblick behält, teilt man diese lange Zeit in **neun Abschnitte** ein. Diese Einteilung nennt man **Chronologie** (zeitliche Reihenfolge).
+
+Ein wichtiges Wort dafür ist **Dynastie**: eine **Herrscherfamilie**, also auch **die Zeit, in der diese Familie regierte**. Wenn ein Vater als Pharao regiert und danach sein Sohn und dann sein Enkel, gehören sie zur gleichen Dynastie. Kommt eine neue Familie an die Macht, beginnt eine neue Dynastie. Im Alten Ägypten gab es etwa 30 Dynastien.
+
+**Das Muster:** Es gibt drei «Reiche» und drei «Zwischenzeiten». Sie wechseln sich ab:
+- In einem **Reich** ist Ägypten **geeint** unter einem Pharao. Dem Land geht es gut, es gibt Blüte in Kunst, Bauten und Wissenschaft.
+- In einer **Zwischenzeit** ist Ägypten **zerfallen**. Mehrere Könige regieren gleichzeitig, aber nur über Teile des Landes. Es herrscht Unruhe.
+
+**1. Frühzeit** (um 3100–2700 v. Chr.; 1.–2. Dynastie)
+Ein Staat mit Verwaltung entsteht. **Das obere und das untere Land am Nil werden unter einem König geeint.** **Memphis** wird die erste Hauptstadt. In der Nähe liegen die Gräber der Könige.
+
+**2. Altes Reich** (um 2700–2180 v. Chr.; 3.–6. Dynastie)
+Erste lange Blüte und Wohlstand. Es werden **Pyramiden** als Gräber für die Könige gebaut, die ersten Gebäude aus Stein überhaupt. Die älteste ist die **Stufenpyramide des Djoser in Sakkara**, später folgt z.B. die Pyramide des **Cheops in Giza**. Der Pyramidenbau war Aufgabe der ganzen Gesellschaft: Man glaubte, das Weiterleben jedes Einzelnen im Jenseits hänge davon ab, dass der verstorbene König zu den Göttern aufsteigt. **Am Ende der 6. Dynastie** wird der König schwach, die Steuern bleiben aus, das Reich bricht zusammen.
+
+**3. Erste Zwischenzeit** (um 2180–2050 v. Chr.; 7./8.–11. Dynastie)
+Viele Könige kämpfen um die Macht, regieren nur kurz, manchmal gleichzeitig, und nicht über ganz Ägypten. Der Glaube an **Osiris** wird wichtiger. Um 2050 v. Chr. übernimmt die **11. Dynastie** aus **Theben** die Herrschaft über ganz Ägypten.
+
+**4. Mittleres Reich** (um 2050–1650 v. Chr.; 11.–13. Dynastie)
+Wieder Blüte von Literatur, Kunst, Wissenschaft und Architektur. **Amenemhet I.** gründet die 12. Dynastie und verlegt die Hauptstadt nach Norden (Nähe el-Lischt). **Nubien** im Süden wird erobert. In Abydos entstehen viele Kultstätten für den Totengott **Osiris**. Auch der Gott **Amun** wird wichtiger.
+
+**5. Zweite Zwischenzeit** (um 1650–1550 v. Chr.; 14.–17. Dynastie)
+Die Zentralmacht zerfällt. In Theben herrschen Kleinkönige, im Nildelta die **Hyksos**. Diese sind eingewandert, sesshaft geworden und bringen neue Technik wie den **Streitwagen**. Ihre Anführer sehen sich als Pharaonen. **Ahmose**, Begründer der 18. Dynastie, besiegt die Hyksos und eint das Land erneut.
+
+**6. Neues Reich** (um 1550–1070 v. Chr.; 18.–20. Dynastie)
+Ägyptens **goldenes Zeitalter**. Der Gott **Amun** aus Theben wird der wichtigste Gott, sein Tempel in Theben das grösste religiöse Zentrum. Die Pharaonen werden im **«Tal der Könige»** bei Theben begraben. Grosse Armee, viele Kriege: Unter **Thutmosis III.** ist Ägypten am grössten. **Amenophis IV.** verbietet alle Götter ausser dem Sonnengott **Aton**, nennt sich **Echnaton** und verlegt die Hauptstadt nach **Amarna**. Unter **Tutanchamun** werden die alten Götter wieder verehrt. Unter **Ramses III.** gibt es Angriffe fremder Völker, wirtschaftliche Probleme und Unruhen.
+
+**7. Dritte Zwischenzeit** (um 1070–715 v. Chr.; 21.–24. Dynastie)
+Ägypten zerfällt in ein **Nord- und ein Südreich**. Könige verschiedener Dynastien regieren gleichzeitig, viele aus **libyschen** Familien.
+
+**8. Spätzeit** (um 715–332 v. Chr.; 25.–30. Dynastie)
+Die Könige von **Kusch** (heutiger Sudan) erobern Ägypten (25. Dynastie). **664 v. Chr.** fallen die **Assyrer** ein. Die Stadt **Sais** wird unabhängig (26. Dynastie). **525 v. Chr. erobern die Perser Ägypten.** Von 404 bis 343 v. Chr. regieren **zum letzten Mal ägyptische Pharaonen**. **332 v. Chr. erobert Alexander der Grosse Ägypten.**
+
+**9. Ptolemäer-Zeit** (332–30 v. Chr.)
+Alexander gründet **Alexandria** als neue Hauptstadt. Sein General **Ptolemaios** gründet die Dynastie der **Ptolemäer**, die etwa **300 Jahre** regiert. Sie sind Griechen, lassen sich aber als Pharaonen darstellen. Die Herrschaft endet mit **Kleopatra (VII.)**. **30 v. Chr. erobert Augustus Ägypten** → Teil des **Römischen Reiches**.
+
+**Merktrick:** Frühzeit, dann **dreimal Reich + Zwischenzeit**, dann Spätzeit und Ptolemäer. Die Reiche der Reihe nach: **Alt – Mittel – Neu** (zuerst das Alte, zuletzt das Neue).
+
+**Achtung, typischer Fehler:** Hyksos-Text und «goldenes Zeitalter» nicht verwechseln! Ahmose gründet die 18. Dynastie, und damit beginnt das Neue Reich. Also kommen die Hyksos **davor** (Zweite Zwischenzeit), das goldene Zeitalter **danach** (Neues Reich).
+
+**Verbindungen:** Herodot besuchte Ägypten um 450 v. Chr., also in der **Spätzeit**, als die **Perser** herrschten. Das ganze Alte Ägypten liegt in der Epoche **Antike**.
+
+| Nr. | Abschnitt | Zeit (v. Chr.) | Dynastien | Wichtigstes |
+|---|---|---|---|---|
+| 1 | Frühzeit | um 3100–2700 | 1.–2. | Einigung Ägyptens; Memphis |
+| 2 | Altes Reich | um 2700–2180 | 3.–6. | Pyramiden (Djoser, Cheops) |
+| 3 | Erste Zwischenzeit | um 2180–2050 | 7./8.–11. | Unruhe; Osiris; 11. Dynastie aus Theben |
+| 4 | Mittleres Reich | um 2050–1650 | 11.–13. | Amenemhet I.; Nubien; Osiris; Amun |
+| 5 | Zweite Zwischenzeit | um 1650–1550 | 14.–17. | Hyksos, Streitwagen; Ahmose |
+| 6 | Neues Reich | um 1550–1070 | 18.–20. | goldenes Zeitalter; Tal der Könige; Echnaton |
+| 7 | Dritte Zwischenzeit | um 1070–715 | 21.–24. | Nord- und Südreich; libysche Familien |
+| 8 | Spätzeit | um 715–332 | 25.–30. | Kusch, Assyrer, Perser (525); Alexander (332) |
+| 9 | Ptolemäer-Zeit | 332–30 | Ptolemäer | Alexandria; Kleopatra; Augustus (30) |`,
+  karten: [
+    ["Dynastie", "Herrscherfamilie; auch die Zeit, in der diese Familie regierte"],
+    ["Chronologie", "zeitliche Reihenfolge, Einteilung in Zeitabschnitte"],
+    ["Die 9 Abschnitte der Reihe nach", "Frühzeit – Altes Reich – Erste Zwischenzeit – Mittleres Reich – Zweite Zwischenzeit – Neues Reich – Dritte Zwischenzeit – Spätzeit – Ptolemäer-Zeit"],
+    ["Reich vs. Zwischenzeit", "Reich: Ägypten geeint, Blüte. Zwischenzeit: viele Könige gleichzeitig, Unruhe."],
+    ["Frühzeit", "um 3100–2700 v. Chr.: oberes und unteres Land unter einem König geeint; Hauptstadt Memphis"],
+    ["Altes Reich", "um 2700–2180 v. Chr.: Pyramiden als Königsgräber; Zusammenbruch am Ende der 6. Dynastie"],
+    ["Älteste Pyramide", "Stufenpyramide des Djoser in Sakkara"],
+    ["Erste Zwischenzeit", "um 2180–2050 v. Chr.: Unruhe; Osiris wird wichtiger; 11. Dynastie aus Theben eint das Land"],
+    ["Mittleres Reich", "um 2050–1650 v. Chr.: Blüte; Amenemhet I.; Nubien erobert; Osiris; Amun"],
+    ["Zweite Zwischenzeit", "um 1650–1550 v. Chr.: Hyksos im Nildelta (Streitwagen); Ahmose besiegt sie"],
+    ["Neues Reich", "um 1550–1070 v. Chr.: goldenes Zeitalter; Amun; Tal der Könige; Thutmosis III.; Echnaton; Tutanchamun; Ramses III."],
+    ["Dritte Zwischenzeit", "um 1070–715 v. Chr.: Nord- und Südreich; libysche Familien"],
+    ["Spätzeit", "um 715–332 v. Chr.: Kusch, Assyrer (664), Perser (525); 332 Alexander der Grosse"],
+    ["Ptolemäer-Zeit", "332–30 v. Chr.: Alexandria; griechische Herrscher; Kleopatra (VII.); 30 v. Chr. Augustus → Rom"],
+    ["Hyksos", "Einwanderer im Nildelta in der Zweiten Zwischenzeit; brachten den Streitwagen"],
+    ["Echnaton", "= Amenophis IV.; liess nur noch den Sonnengott Aton verehren; Hauptstadt Amarna"],
+    ["Tal der Könige", "Begräbnisort der Pharaonen im Neuen Reich, bei Theben"],
+    ["525 v. Chr.", "Die Perser erobern Ägypten"],
+    ["332 v. Chr.", "Alexander der Grosse erobert Ägypten"],
+    ["30 v. Chr.", "Augustus erobert Ägypten → Teil des Römischen Reiches (Ende der Ptolemäer)"]
+  ],
+  aufgaben: [
+    { f: "Was ist eine Dynastie?", l: "Eine Herrscherfamilie, also auch die Zeit, in der diese Familie regierte." },
+    { f: "Bringe in die richtige Reihenfolge: Neues Reich, Frühzeit, Ptolemäer-Zeit, Erste Zwischenzeit, Spätzeit, Altes Reich, Dritte Zwischenzeit, Mittleres Reich, Zweite Zwischenzeit.", l: "1 Frühzeit – 2 Altes Reich – 3 Erste Zwischenzeit – 4 Mittleres Reich – 5 Zweite Zwischenzeit – 6 Neues Reich – 7 Dritte Zwischenzeit – 8 Spätzeit – 9 Ptolemäer-Zeit.\n\n**Tipp:** Frühzeit, dreimal Reich + Zwischenzeit, Spätzeit, Ptolemäer. Reiche: Alt – Mittel – Neu." },
+    { f: "Zu welchem Abschnitt gehört dieser Text: «Hyksos wandern ins Nildelta ein und bringen den Streitwagen. Ahmose besiegt sie.»?", l: "**Zweite Zwischenzeit.**\n\nAhmose gründet die 18. Dynastie, und damit beginnt das Neue Reich. Der Text beschreibt also die Zeit davor." },
+    { f: "Zu welchem Abschnitt gehört dieser Text: «Goldenes Zeitalter, Tal der Könige, Thutmosis III., Echnaton.»?", l: "**Neues Reich.**" },
+    { f: "Was ist der Unterschied zwischen einem «Reich» und einer «Zwischenzeit»?", l: "In einem **Reich** ist Ägypten unter einem Pharao geeint, mächtig und reich (Blüte).\n\nIn einer **Zwischenzeit** regieren viele Könige gleichzeitig über Teile des Landes, es herrscht Unruhe." },
+    { f: "Warum ist das Alte Reich wichtig für die Baukunst?", l: "Es werden die ersten Gebäude aus Stein überhaupt gebaut: die Pyramiden als Königsgräber. Zuerst die Stufenpyramide des Djoser in Sakkara, später z.B. die Pyramide des Cheops in Giza." },
+    { f: "Warum war der Pyramidenbau eine Aufgabe der ganzen Gesellschaft?", l: "Man glaubte, das Weiterleben jedes Einzelnen im Jenseits hänge davon ab, dass der verstorbene König zu den Göttern aufsteigt." },
+    { f: "Was machte Pharao Amenophis IV. Besonderes?", l: "Er verbot alle anderen Götter, nur noch der Sonnengott **Aton** durfte verehrt werden. Er nannte sich **Echnaton** und verlegte die Hauptstadt nach **Amarna**. Unter Tutanchamun wurden die alten Götter wieder verehrt." },
+    { f: "Welche fremden Völker oder Herrscher regierten Ägypten in der Spätzeit und Ptolemäer-Zeit?", l: "Kusch (25. Dynastie), Einfall der Assyrer (664), die Perser (ab 525), Alexander der Grosse (332), danach die griechischen Ptolemäer, ab 30 v. Chr. die Römer." },
+    { f: "In welchem Abschnitt besuchte Herodot Ägypten (um 450 v. Chr.)? Wer herrschte damals?", l: "In der **Spätzeit**. Damals herrschten die **Perser** (525–404 v. Chr.).\n\n**Tipp:** 450 liegt zwischen 715 und 332 v. Chr." },
+    { f: "Wie lange regierten die Ptolemäer ungefähr? Rechne nach.", l: "332 − 30 = 302, also etwa **300 Jahre**.\n\n**Tipp:** Bei Jahren vor Christus die kleinere Zahl von der grösseren abziehen." },
+    { f: "Wie endete das Alte Ägypten?", l: "Mit **Kleopatra (VII.)** endete die Herrschaft der Ptolemäer. **30 v. Chr.** eroberte **Augustus** Ägypten und machte es zu einem Teil des Römischen Reiches." }
+  ],
+  quiz: [
+    { f: "Was ist eine Dynastie?", o: ["Ein ägyptischer Tempel", "Eine Herrscherfamilie und die Zeit, in der sie regierte", "Eine Pyramidenform", "Ein Gott"], r: 1, e: "So steht es in der Notiz auf dem Arbeitsblatt." },
+    { f: "Welcher Abschnitt kommt ganz am Anfang?", o: ["Altes Reich", "Frühzeit", "Erste Zwischenzeit", "Spätzeit"], r: 1, e: "In der Frühzeit (um 3100 v. Chr.) wird Ägypten zum ersten Mal geeint." },
+    { f: "Was geschah in der Frühzeit?", o: ["Das obere und untere Land am Nil wurden unter einem König geeint", "Die Perser eroberten Ägypten", "Kleopatra regierte", "Die Hyksos kamen"], r: 0, e: "Memphis wurde die erste Hauptstadt des geeinten Reiches." },
+    { f: "In welchem Abschnitt wurden die ersten Pyramiden gebaut?", o: ["Neues Reich", "Spätzeit", "Altes Reich", "Ptolemäer-Zeit"], r: 2, e: "Im Alten Reich entstanden die ersten Steinbauten überhaupt." },
+    { f: "Welche ist die älteste Pyramide?", o: ["Cheops-Pyramide in Giza", "Stufenpyramide des Djoser in Sakkara", "Pyramide in Alexandria", "Pyramide im Tal der Könige"], r: 1, e: "Erst später entstand die klassische Form wie bei Cheops." },
+    { f: "Was ist typisch für eine Zwischenzeit?", o: ["Ägypten ist geeint und reich", "Viele Könige regieren gleichzeitig über Teile des Landes, es herrscht Unruhe", "Es werden die grössten Pyramiden gebaut", "Es gibt keinen einzigen König"], r: 1, e: "Zwischenzeiten sind Zeiten der Instabilität." },
+    { f: "Welche Zeit gilt als Ägyptens «goldenes Zeitalter»?", o: ["Frühzeit", "Erste Zwischenzeit", "Neues Reich", "Spätzeit"], r: 2, e: "Im Neuen Reich war Ägypten am grössten und mächtigsten." },
+    { f: "Wer brachte den Streitwagen nach Ägypten?", o: ["die Perser", "die Hyksos", "die Römer", "die Ptolemäer"], r: 1, e: "Die Hyksos wanderten in der Zweiten Zwischenzeit ins Nildelta ein." },
+    { f: "Zu welchem Abschnitt gehört der Text über die Hyksos und Ahmose?", o: ["Neues Reich", "Zweite Zwischenzeit", "Altes Reich", "Dritte Zwischenzeit"], r: 1, e: "Ahmose gründet danach die 18. Dynastie, mit der das Neue Reich beginnt." },
+    { f: "Welcher Pharao liess nur noch den Sonnengott Aton verehren?", o: ["Tutanchamun", "Ramses III.", "Amenophis IV. (Echnaton)", "Cheops"], r: 2, e: "Er nannte sich Echnaton und verlegte die Hauptstadt nach Amarna." },
+    { f: "Wo liessen sich die Pharaonen im Neuen Reich begraben?", o: ["in Alexandria", "im Tal der Könige bei Theben", "in Memphis", "in Abydos"], r: 1, e: "Das Tal der Könige wurde der neue Begräbnisort." },
+    { f: "Wann eroberten die Perser Ägypten?", o: ["3100 v. Chr.", "1550 v. Chr.", "525 v. Chr.", "30 v. Chr."], r: 2, e: "525 v. Chr. wurde Ägypten eine Provinz des Perserreichs." },
+    { f: "Wann eroberte Alexander der Grosse Ägypten?", o: ["664 v. Chr.", "525 v. Chr.", "332 v. Chr.", "30 v. Chr."], r: 2, e: "Damit endet die Spätzeit und beginnt die Ptolemäer-Zeit." },
+    { f: "Welche Stadt machte Alexander der Grosse zur neuen Hauptstadt?", o: ["Memphis", "Theben", "Amarna", "Alexandria"], r: 3, e: "Er gründete Alexandria selbst." },
+    { f: "Mit welcher Herrscherin endete die Ptolemäer-Zeit?", o: ["Nofretete", "Kleopatra (VII.)", "Hatschepsut", "Isis"], r: 1, e: "Danach eroberte Augustus Ägypten." },
+    { f: "Was geschah 30 v. Chr.?", o: ["Ägypten wurde geeint", "Augustus eroberte Ägypten und machte es zu einem Teil des Römischen Reiches", "Die erste Pyramide wurde gebaut", "Die Hyksos wurden besiegt"], r: 1, e: "Damit endet das Alte Ägypten." },
+    { f: "In welchem Abschnitt besuchte Herodot (um 450 v. Chr.) Ägypten?", o: ["Altes Reich", "Neues Reich", "Spätzeit", "Ptolemäer-Zeit"], r: 2, e: "450 v. Chr. liegt in der Spätzeit (715–332 v. Chr.), als die Perser herrschten." },
+    { f: "Welche Reihenfolge der Reiche ist richtig?", o: ["Neues – Mittleres – Altes Reich", "Altes – Mittleres – Neues Reich", "Mittleres – Altes – Neues Reich", "Altes – Neues – Mittleres Reich"], r: 1, e: "Zuerst das Alte, dann das Mittlere, zuletzt das Neue Reich." },
+    { f: "Waren die Ptolemäer Ägypter?", o: ["Ja, sie stammten aus Theben", "Nein, sie waren Griechen, liessen sich aber als Pharaonen darstellen", "Nein, sie waren Perser", "Nein, sie waren Römer"], r: 1, e: "Ptolemaios war ein General Alexanders des Grossen." }
   ]
 }
   ]
