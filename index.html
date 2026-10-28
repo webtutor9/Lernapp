@@ -325,8 +325,9 @@ function fanfare(ctx, t0) {
 function playFanfare() {
   withAudio((AC, t) => fanfare(AC, t + 0.02));
 }
-/* Begrüssung beim «Los geht's»: aufgenommene Männerstimme (begruessung.mp3), abgespielt über Web Audio
-   wie die übrigen Töne. Läuft die Fanfare noch, wird sie dabei leiser. */
+/* Begrüssung beim «Los geht's»: Audiodatei begruessung.mp3 im Repository, abgespielt über Web Audio
+   wie die übrigen Töne. Fehlt die Datei, bleibt es still. Läuft die Fanfare noch, wird sie dabei leiser.
+   Wer die Datei wieder ergänzt, trägt sie auch in sw.js unter FILES ein. */
 let HELLO = null;
 function loadHello() {
   if (!HELLO) HELLO = fetch("begruessung.mp3").then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
@@ -862,7 +863,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.13 (28.10.2026)";
+const VERSION = "1.14 (28.10.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
