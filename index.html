@@ -159,6 +159,7 @@ details.aufg summary::-webkit-details-marker{display:none}
 <div id="splash"><h2>Lernapp</h2><p id="sp-tap">Tippen zum Starten</p><button id="b-go">Los geht’s</button></div>
 
 <script src="latein.js"></script>
+<script src="latein-grammatik.js"></script>
 <script src="franzoesisch.js"></script>
 <script src="geschichte.js"></script>
 <script src="informatik.js"></script>
@@ -470,7 +471,7 @@ const VIEWS = {};
 VIEWS.home = () => {
   const rows = FAECHER.map(f => {
     const keys = fachKeys(f), p = pct(keys);
-    const n = f.art === "vokabeln" ? `${f.vok.length} Vokabeln` : `${f.themen.length} Themen`;
+    const n = f.art === "vokabeln" ? `${f.vok.length} Vokabeln` : `${f.themen.length} ${f.themen.length === 1 ? "Thema" : "Themen"}`;
     return `<button class="card subject" data-f="${f.id}">
       <span class="badge" style="background:${f.farbe}">${esc(f.kuerzel)}</span>
       <span style="flex:1;min-width:0"><span class="t">${esc(f.name)}</span><br><span class="s">${n} · ${p} % sicher</span>
@@ -863,7 +864,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.14 (28.10.2026)";
+const VERSION = "1.15 (05.11.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
