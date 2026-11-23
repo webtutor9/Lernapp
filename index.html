@@ -392,16 +392,17 @@ function prepVokabel(line, nr) {
   return v;
 }
 /* Englisch: Englisch | Deutsch | Wortart | Hinweis (optional) | Beispielsatz (optional) */
-const ART_EN = { n: "Nomen", v: "Verb", adj: "Adjektiv", adv: "Adverb", phr: "Redewendung", "phr v": "Phrasal Verb", excl: "Ausruf", "v / n": "Verb / Nomen", prep: "Präposition", pron: "Pronomen", conj: "Konjunktion" };
+const ART_EN = { n: "Nomen", "n pl": "Nomen (Plural)", "n sg": "Nomen", v: "Verb", adj: "Adjektiv", adv: "Adverb", phr: "Redewendung", phrase: "Redewendung", "phr v": "Phrasal Verb", excl: "Ausruf", abbrev: "Abkürzung", prep: "Präposition", pron: "Pronomen", conj: "Konjunktion" };
 function enCore(x) { /* «to be worried about» → «worried about», «to lend sb sth» → «lend» */
   return x.replace(/\(.*?\)/g, " ").replace(/\b(sb|sth)\b/g, " ").replace(/^\s*to\s+(be\s+)?/i, "").replace(/[?!]/g, "").replace(/\s+/g, " ").trim();
 }
 function prepEn(line, nr) {
-  const [en, de, t, h, ex] = line.split("|").map(s => (s || "").trim());
+  const [en, de, t0, h, ex] = line.split("|").map(s => (s || "").trim());
+  const t = t0.toLowerCase().replace(/\.$/, "").replace(/\s*\/\s*/g, " / ");
   const v = { key: "en:" + en + "|" + de, la: en, de, t, nr, lemma: en.split(" / ")[0].trim() };
   if (h) v.hint = h;
   if (ex) v.ex = ex;
-  v.info = ART_EN[t] || "";
+  v.info = t.split(" / ").map(x => ART_EN[x] || "").filter(Boolean).join(" / ");
   const vars = new Set();
   en.split(/\s\/\s/).filter(part => !/^\s*(sb|sth)\b/.test(part)).forEach(part => {
     const p = part.trim(), noPar = p.replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim();
@@ -410,7 +411,6 @@ function prepEn(line, nr) {
     });
     const cut = p.split(/\s+(sb|sth)\b/)[0].trim(), core = enCore(p);
     [cut, cut.replace(/^to\s+/i, ""), core, /^to\s/i.test(p) && !/^to\s+be\s/i.test(p) ? "to " + core : ""].forEach(x => x && vars.add(x));
-    (p.match(/\((.*?)\)/g) || []).forEach(m => { const inner = m.slice(1, -1).trim(); if (inner.split(" ").length > 1 || !/^(me|your eyes)$/.test(inner)) vars.add(inner); });
   });
   v.write = [...vars].map(x => x.trim()).filter(x => x && x.length > 1 && !/^(to|sb|sth)$/i.test(x));
   v.core = enCore(v.lemma);
@@ -518,7 +518,8 @@ VIEWS.fach = ({ id }) => {
       ${chip("e", "Einführung", [], "wide")}
       ${f.lektionen.map(l => chip(String(l.nr), esc(l.nr), l.items.map(v => v.key))).join("")}</div>
       <div class="rowtools"><button class="pill" id="b-all">Alle</button><button class="pill" id="b-none">Keine</button></div>
-      ${f.parse === "fr" ? `<p class="hint">E = Entrée, A/B/C = Atelier, L = Coin lecture, + = Extras aus den Kästen</p>` : ""}`;
+      ${f.parse === "fr" ? `<p class="hint">E = Entrée, A/B/C = Atelier, L = Coin lecture, + = Extras aus den Kästen</p>` : ""}
+      ${f.chipHinweis ? `<p class="hint">${esc(f.chipHinweis)}</p>` : ""}`;
   } else {
     pickHtml = `<h2 class="sec">Themen wählen</h2><div class="card">${f.themen.map(t => {
       const p = pct(t.allKeys);
@@ -903,7 +904,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.16 (23.11.2026)";
+const VERSION = "1.17 (23.11.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
