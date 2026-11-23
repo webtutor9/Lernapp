@@ -1,7 +1,7 @@
 /* Fach Englisch – Headway Pre-intermediate (5th edition), German Wordlist
    Vokabelzeilen: Englisch | Deutsch | Wortart | Hinweis (optional) | Beispielsatz (optional)
    Wortarten wie im Buch: n, n pl, v, adj, adv, phr, phr v, excl, abbrev, kombiniert mit « / » (z.B. v / n)
-   Abschnitte: Unit.Seite, z.B. 3.2 = Unit 3, zweite Seite der Wordlist (Unit 1: S. 1–8, Unit 2: S. 9–14 – bisher nur S. 14,
+   Abschnitte: Unit.Seite, z.B. 3.2 = Unit 3, zweite Seite der Wordlist (Unit 1: S. 1–8, Unit 2: S. 9–14,
    Unit 3: S. 15–21, Unit 4: S. 22–28, Unit 5: S. 29–33) */
 (window.FAECHER = window.FAECHER || []).push({
   id: "englisch",
@@ -17,7 +17,7 @@
   platzhalter: "Englisch eintippen",
   schreibHinweis: "«to» bei Verben und «sb/sth» kannst du weglassen.",
   akzentText: "Richtig:",
-  standard: ["e", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "2.6", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "5.1", "5.2", "5.3", "5.4", "5.5"],
+  standard: ["e", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "5.1", "5.2", "5.3", "5.4", "5.5"],
   einfuehrung: {
     titel: "So liest du die Wordlist",
     text: `Die Wörter stammen aus der **German Wordlist** zu *Headway Pre-intermediate*. Links steht das englische Wort, dann die Wortart, die Aussprache, ein Beispielsatz und die deutsche Bedeutung.
@@ -163,7 +163,74 @@ to wink|zwinkern|v||Can you wink?
 woolly|aus Wolle, wollig|adj||I'm wearing a woolly jumper and I'm very hot.
 to be worried about|besorgt sein über, sich Sorgen machen um|adj||Are you worried that he won't come?
 ` },
-{ nr: "2.6", titel: "Unit 2 · to solve – village", text: "Ende von Unit 2 (Seite 14 der Wordlist): Probleme lösen, Essen zum Mitnehmen, Dorfleben.", v: `
+{ nr: "2.1", titel: "Unit 2 · to be a handful – confident", text: "Unit 2 handelt von Persönlichkeit und Beziehungen: Wie ist jemand? Mutig, ehrgeizig, selbstsicher?", v: `
+to be a handful|schwierig sein (eine Handvoll sein)|phr||Jessica is a bit of a handful – so difficult to control!
+absolutely|absolut (Bekräftigung)|adv||Are you asking me if I'm having a good time in London? Absolutely!
+acting|Schauspielerei|n|to act: schauspielern · actor: Schauspieler · actress: Schauspielerin|I'm not very good at acting.
+art gallery|Kunstgalerie|n||The National Gallery is my favourite art gallery in London.
+to beat sb at sth|jdn. in etwas besiegen, schlagen|v||I'd love to beat him at sports, but he's so good at everything!
+to believe in sth|glauben an etwas|v||Do you believe in ghosts?
+brave|tapfer, mutig|adj||I wasn't a brave child. I was scared of everything.
+competitive|kompetitiv, wettkampforientiert|adj|eager to win · competition: Wettkampf|My son is very competitive. He always wants to win.
+confidence|Selbstvertrauen|n||I don't need other people to give me confidence.
+confident|selbstsicher|adj||I started to feel more confident when I met my best friend.
+` },
+{ nr: "2.2", titel: "Unit 2 · countryside – to explore", text: "Freizeit (crossword, to explore), Familie (divorced) und Meinungen (to disagree).", v: `
+countryside|Land (Gegensatz zur Stadt)|n|in the countryside: auf dem Land|Let's go for a walk in the countryside.
+crossword|Kreuzworträtsel|n||Can I do the crossword?
+to be dependent on|abhängig sein von|adj||He's very dependent on other people.
+despite|trotz|prep||Despite the weather, we went for a nice walk.
+to disagree with|widersprechen, anderer Meinung sein|v|n: disagreement · ≠ to agree (with sb): jdm. zustimmen (n: agreement)|I strongly disagree with you. I think you're wrong.
+to be divorced|geschieden sein|adj|divorce: Scheidung|She was married for seven years, but now she's divorced.
+dress|Kleid|n|to get dressed: sich anziehen|I love your dress. Where did you buy it?
+to dye|färben|v||I want to dye my hair red.
+equally|gleichermassen|adv||I love being with friends, but I'm equally happy on my own.
+experiment|experimentieren; Experiment|v / n||My dad loves to experiment with new recipes.
+to explore|erkunden|v|explorer: Forscher(in) · exploration: Erforschung, Erkundung|I would like to explore new places on my own.
+` },
+{ nr: "2.3", titel: "Unit 2 · to express an opinion – ingredient", text: "Meinungen äussern, Erwachsene und Zwillinge, Hausaufgaben.", v: `
+to express an opinion|eine Meinung äussern|phr||Is it difficult for you to express an opinion in a group?
+fence|Zaun|n||The ball went over the fence into my neighbour's garden.
+fight|kämpfen; Kampf|v / n||You need to fight for yourself.
+to forget|vergessen|v||Forget about the flat, it was awful.
+grown-up|Erwachsene(r)|n|Synonym: adult|I'd love to live with friends when I'm a grown-up.
+headphones|Kopfhörer|n pl||I always listen to music on headphones when I'm on the train.
+homework|Hausaufgaben|n|immer Singular · to do homework: Hausaufgaben machen|Have you got any homework today?
+hopeless|hoffnungslos, unfähig|adj|to be hopeless at doing sth: unfähig sein, etwas zu tun|Don't tell her anything private. She's hopeless at keeping secrets.
+identical|identisch|adj|identical twins: eineiige Zwillinge|We are identical twins.
+ill|krank|adj|ill (BE) = sick (AE) · illness: Krankheit|My grandmother is ill. I'm going to visit her.
+independent|unabhängig|adj|independence: Unabhängigkeit|Are you an independent person?
+ingredient|Zutat|n||Have you got all the ingredients for the recipe?
+` },
+{ nr: "2.4", titel: "Unit 2 · to invite – polite", text: "Nachbarn und Freunde: einladen, in Kontakt bleiben, eifersüchtig, höflich.", v: `
+to invite|einladen|v|invitation: Einladung|My new neighbours didn't invite me to their party.
+to be jealous of|eifersüchtig sein auf|adj|jealousy: Eifersucht|My brother is jealous of me because I have a girlfriend.
+to keep in touch|in Kontakt bleiben|phr||I use social networking sites to keep in touch with my friends.
+to be lazy|faul sein|adj||Don't be so lazy! Get up and do something!
+to have a lie-in|ausschlafen|phr||I love to have a lie-in on Sunday mornings.
+magazine|Zeitschrift|n||Could you please go to the newsagent's and buy me a magazine?
+neighbour|Nachbar(in)|n||My neighbour is one of my best friends.
+to notice|bemerken|v||She thinks young people don't notice old people, but it isn't true.
+to pay (no) attention to sth|etwas (nicht) beachten|phr||You can complain all you want. I'm going to pay no attention.
+personality|Persönlichkeit|n||My sister and I have a similar personality. We are both shy.
+play|spielen; Theaterstück|v / n|a play: ein Theaterstück|Peter's son is acting at the school play.
+polite|höflich|adj|politeness: Höflichkeit|I'm lucky with my neighbour. She's very polite.
+` },
+{ nr: "2.5", titel: "Unit 2 · postman – solitary", text: "Rätsel, Quiz und Rezepte und noch mehr Wörter, um Menschen zu beschreiben (shy, smart, solitary).", v: `
+postman|Postbote|n||The postman gave me the wrong letter.
+practice|Übung|n|to practise: üben|Don't worry if it isn't right the first time. It takes practice.
+puzzle|Puzzle, Rätsel|n||I never stay at home to do a puzzle. It's so boring.
+quiz|Quiz|n||Try this magazine personality quiz. It's really good.
+recipe|Rezept|n||I'd like to try this new recipe.
+rich|reich|adj|Synonym: wealthy|She's a rich lady. She has a lot of money.
+saxophone|Saxofon|n||I play the saxophone in a band.
+scary|furchterregend, beängstigend|adj||Chloe doesn't like speaking in front of people. She finds it scary.
+score|erzielen; Punktestand|v / n|What's the score? = Wie steht es?|Did you do the quiz? What's your score?
+shy|schüchtern|adj||Don't be shy. Tell them what you think.
+smart|klug; elegant|adj|Synonym: clever · smart clothes: elegante Kleider|I don't usually wear smart clothes after work.
+solitary|einzelgängerisch|adj||He never enjoyed being with other people. He was a solitary boy.
+` },
+{ nr: "2.6", titel: "Unit 2 · to solve – village", text: "Ende von Unit 2: Probleme lösen, Essen zum Mitnehmen, Dorfleben.", v: `
 to solve|lösen|v|solution: Lösung|You've got to learn to solve your problems on your own.
 to suit|passen, stehen|v|suit: Anzug|These clothes suit you. They look really good on you.
 to be suspicious of|misstrauisch sein gegenüber|adj|suspicion: Misstrauen|My neighbour is suspicious of young people. She doesn't trust them.

@@ -467,7 +467,16 @@ for (const f of FAECHER) {
 const fachById = id => FAECHER.find(f => f.id === id);
 function fachKeys(f) { return f.art === "vokabeln" ? f.vok.map(v => v.key) : f.themen.flatMap(t => t.allKeys); }
 function selection(f) {
-  if (!DB.sel[f.id]) DB.sel[f.id] = f.art === "vokabeln" ? (f.standard ? f.standard.slice() : ["1", "2", "3", "4", "5"]) : f.themen.map(t => t.id);
+  const all = f.art === "vokabeln" ? f.lektionen.map(l => String(l.nr)) : f.themen.map(t => t.id);
+  DB.known = DB.known || {};
+  if (!DB.sel[f.id]) DB.sel[f.id] = f.art === "vokabeln" ? (f.standard ? f.standard.slice() : ["1", "2", "3", "4", "5"]) : all.slice();
+  else {
+    /* Neu hinzugekommene Abschnitte automatisch auswählen (bei Vokabeln nur, wenn sie in «standard» stehen).
+       Englisch hatte vor 1.18 noch keine Liste der bekannten Abschnitte: dort gilt Unit 1 als bekannt. */
+    const known = DB.known[f.id] || (f.id === "englisch" ? all.filter(x => /^1\./.test(x)) : null);
+    if (known) all.filter(x => !known.includes(x) && !DB.sel[f.id].includes(x) && (f.art !== "vokabeln" || !f.standard || f.standard.includes(x))).forEach(x => DB.sel[f.id].push(x));
+  }
+  if (String(DB.known[f.id]) !== String(all)) { DB.known[f.id] = all; save(); }
   return DB.sel[f.id];
 }
 const opt = (k, d) => (k in DB.opt ? DB.opt[k] : d);
@@ -904,7 +913,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.17 (23.11.2026)";
+const VERSION = "1.18 (23.11.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
