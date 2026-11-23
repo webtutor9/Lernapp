@@ -161,6 +161,7 @@ details.aufg summary::-webkit-details-marker{display:none}
 <script src="latein.js"></script>
 <script src="latein-grammatik.js"></script>
 <script src="franzoesisch.js"></script>
+<script src="englisch.js"></script>
 <script src="geschichte.js"></script>
 <script src="informatik.js"></script>
 <script>
@@ -390,6 +391,31 @@ function prepVokabel(line, nr) {
   if (!/…/.test(lemma)) v.write = lemma.split("/").map(s => s.trim()).filter(Boolean);
   return v;
 }
+/* Englisch: Englisch | Deutsch | Wortart | Hinweis (optional) | Beispielsatz (optional) */
+const ART_EN = { n: "Nomen", v: "Verb", adj: "Adjektiv", adv: "Adverb", phr: "Redewendung", "phr v": "Phrasal Verb", excl: "Ausruf", "v / n": "Verb / Nomen", prep: "Präposition", pron: "Pronomen", conj: "Konjunktion" };
+function enCore(x) { /* «to be worried about» → «worried about», «to lend sb sth» → «lend» */
+  return x.replace(/\(.*?\)/g, " ").replace(/\b(sb|sth)\b/g, " ").replace(/^\s*to\s+(be\s+)?/i, "").replace(/[?!]/g, "").replace(/\s+/g, " ").trim();
+}
+function prepEn(line, nr) {
+  const [en, de, t, h, ex] = line.split("|").map(s => (s || "").trim());
+  const v = { key: "en:" + en + "|" + de, la: en, de, t, nr, lemma: en.split(" / ")[0].trim() };
+  if (h) v.hint = h;
+  if (ex) v.ex = ex;
+  v.info = ART_EN[t] || "";
+  const vars = new Set();
+  en.split(/\s\/\s/).filter(part => !/^\s*(sb|sth)\b/.test(part)).forEach(part => {
+    const p = part.trim(), noPar = p.replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim();
+    [p, noPar, p.replace(/[()]/g, ""), noPar.replace(/\b(sb|sth)\b/g, " ").replace(/\s+/g, " ").trim()].forEach(x => {
+      if (!x) return; vars.add(x); vars.add(x.replace(/^to\s+/i, ""));
+    });
+    const cut = p.split(/\s+(sb|sth)\b/)[0].trim(), core = enCore(p);
+    [cut, cut.replace(/^to\s+/i, ""), core, /^to\s/i.test(p) && !/^to\s+be\s/i.test(p) ? "to " + core : ""].forEach(x => x && vars.add(x));
+    (p.match(/\((.*?)\)/g) || []).forEach(m => { const inner = m.slice(1, -1).trim(); if (inner.split(" ").length > 1 || !/^(me|your eyes)$/.test(inner)) vars.add(inner); });
+  });
+  v.write = [...vars].map(x => x.trim()).filter(x => x && x.length > 1 && !/^(to|sb|sth)$/i.test(x));
+  v.core = enCore(v.lemma);
+  return v;
+}
 /* Französisch: Französisch | Deutsch | Wortart | Hinweis (optional) */
 const FR_VOKAL = /^[aeiouyâàäéèêëîïôöœûùü]/i;
 function prepFr(line, nr) {
@@ -427,7 +453,7 @@ function prepFr(line, nr) {
 }
 for (const f of FAECHER) {
   if (f.art === "vokabeln") {
-    const prep = f.parse === "fr" ? prepFr : prepVokabel;
+    const prep = f.parse === "fr" ? prepFr : f.parse === "en" ? prepEn : prepVokabel;
     f.vok = []; f.lektionen.forEach(l => { l.items = l.v.trim().split("\n").map(x => prep(x, l.nr)); f.vok.push(...l.items); });
   } else {
     f.themen.forEach(t => {
@@ -544,7 +570,7 @@ VIEWS.lesen = ({ id }) => {
     if (selection(f).includes("e")) html += `<div class="card read md"><h3>${esc(f.einfuehrung.titel)}</h3>${md(f.einfuehrung.text)}</div>`;
     html += selectedLessons(f).map(l => `<div class="card read md"><h3>${f.kopf === "titel" ? esc(l.titel) : `Lektion ${l.nr}: ${esc(l.titel)}`}</h3><p>${inline(l.text)}</p>
       <table class="vtab"><thead><tr><th>${esc(f.name)}</th><th>Deutsch</th></tr></thead><tbody>${l.items.map(v =>
-        `<tr><td>${esc(v.la)}</td><td>${esc(v.de)}${v.info ? `<br><small style="color:var(--muted)">${esc(v.info)}</small>` : ""}${v.hint ? `<br><small style="color:var(--muted)">${esc(v.hint)}</small>` : ""}</td></tr>`).join("")}</tbody></table></div>`).join("");
+        `<tr><td>${esc(v.la)}</td><td>${esc(v.de)}${v.info ? `<br><small style="color:var(--muted)">${esc(v.info)}</small>` : ""}${v.hint ? `<br><small style="color:var(--muted)">${esc(v.hint)}</small>` : ""}${v.ex ? `<br><small style="color:var(--muted)"><i>${esc(v.ex)}</i></small>` : ""}</td></tr>`).join("")}</tbody></table></div>`).join("");
   } else {
     html = selectedTopics(f).map(t => `<div class="card read md"><h3>${esc(t.titel)}</h3>${md(t.text)}</div>`).join("");
   }
@@ -560,7 +586,7 @@ VIEWS.karten = ({ id }) => {
     let items = weakFilter(selectedLessons(f).flatMap(l => l.items), v => v.key);
     deck = prioritize(items, v => v.key).slice(0, 20).map(v => {
       const d = dir === "mix" ? pick(["la", "de"]) : dir;
-      const hint = v.hint ? `<div class="hintx">${esc(v.hint)}</div>` : "";
+      const hint = (v.hint ? `<div class="hintx">${esc(v.hint)}</div>` : "") + (v.ex ? `<div class="hintx"><i>${esc(v.ex)}</i></div>` : "");
       return d === "la"
         ? { key: v.key, front: `<div class="front">${esc(v.la)}</div>`, back: `<div class="back">${esc(v.de)}</div>${v.info ? `<div class="info">${esc(v.info)}</div>` : ""}${hint}` }
         : { key: v.key, front: `<div class="front">${esc(v.de)}</div>${v.info ? `<div class="info">${esc(v.info.split(" · ")[0])}</div>` : ""}`, back: `<div class="back"><strong>${esc(v.la)}</strong></div>${v.info ? `<div class="info">${esc(v.info)}</div>` : ""}${hint}` };
@@ -657,6 +683,19 @@ function latinQuestion(v, pool, f) {
   const opts = shuffle([v.perf, ...ds.map(x => x.perf)]);
   return { key: v.key, kind: "Perfekt (ich-Form) von …?", prompt: `${v.lemma} (${v.de.split(",")[0]})`, o: opts, r: opts.indexOf(v.perf), e: v.la };
 }
+/* Englisch: Bedeutung, Wort oder Lückensatz aus dem Beispielsatz */
+function gapRegex(core) { return new RegExp("\\b" + core.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+") + "(s|es|d|ed|ing)?\\b", "i"); }
+function englishQuestion(v, pool, f) {
+  const kinds = ["lade", "lade", "dela", "dela"];
+  const canGap = v.ex && v.core && gapRegex(v.core).test(v.ex);
+  if (canGap) kinds.push("gap", "gap");
+  const k = pick(kinds);
+  if (k === "lade") return bedeutungFrage(v, pool, f);
+  if (k === "dela" || !canGap) return wortFrage(v, pool, f);
+  const ds = distractors(v, pool, 3, x => x.core && norm(x.core) !== norm(v.core) && !overlap(x.de, v.de), (a, b) => norm(a.core) === norm(b.core), f);
+  const opts = shuffle([v.core, ...ds.map(x => x.core)]);
+  return { key: v.key, kind: "Welches Wort passt in die Lücke?", prompt: v.ex.replace(gapRegex(v.core), "_____") + " (" + v.de + ")", o: opts, r: opts.indexOf(v.core), e: `${v.ex} (${v.la} = ${v.de})` };
+}
 function frenchQuestion(v, pool, f) {
   const kinds = ["lade", "lade", "dela", "dela"];
   if (v.genusFr === "m" || v.genusFr === "f") kinds.push("genus");
@@ -671,7 +710,7 @@ VIEWS.quiz = ({ id }) => {
   if (f.art === "vokabeln") {
     const pool = selectedLessons(f).flatMap(l => l.items);
     const items = prioritize(weakFilter(pool, v => v.key), v => v.key).slice(0, 10);
-    const ask = f.parse === "fr" ? frenchQuestion : latinQuestion;
+    const ask = f.parse === "fr" ? frenchQuestion : f.parse === "en" ? englishQuestion : latinQuestion;
     qs = items.map(v => ask(v, pool, f));
     if (selection(f).includes("e")) {
       const intro = shuffle(f.einfuehrung.quiz).slice(0, pool.length ? 3 : 6).map(q => ({ key: f.id + ":q:" + q.f, kind: "Einführung", prompt: q.f, o: q.o, r: q.r, e: q.e, shuffle: true }));
@@ -864,7 +903,7 @@ VIEWS.settings = () => {
 };
 
 /* ---------- Start ---------- */
-const VERSION = "1.15 (05.11.2026)";
+const VERSION = "1.16 (23.11.2026)";
 stack.push({ view: "home", params: {} });
 history.replaceState({ d: 1 }, "");
 render();
